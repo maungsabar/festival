@@ -1,0 +1,63 @@
+<?php
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PublicController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PendaftarController;
+use App\Http\Controllers\LombaController;
+use App\Http\Controllers\SettingController;
+use App\Http\Controllers\UserController;
+
+Route::get('/',          [PublicController::class, 'index'])->name('home');
+Route::get('/daftar',    [PublicController::class, 'showForm'])->name('daftar.form');
+Route::post('/daftar',   [PublicController::class, 'store'])->name('daftar.store');
+Route::get('/daftar/sukses', [PublicController::class, 'sukses'])->name('daftar.sukses');
+Route::get('/api/lomba', [PublicController::class, 'getLomba'])->name('api.lomba');
+
+Route::get('/login',  [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+Route::post('/logout',[AuthController::class, 'logout'])->name('logout');
+
+Route::middleware(['auth.admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/pendaftar',                         [PendaftarController::class, 'index'])->name('pendaftar.index');
+    Route::get('/pendaftar/export',                  [PendaftarController::class, 'export'])->name('pendaftar.export');
+    Route::get('/pendaftar/{pendaftar}',             [PendaftarController::class, 'show'])->name('pendaftar.show');
+    Route::patch('/pendaftar/{pendaftar}/verifikasi',[PendaftarController::class, 'verifikasi'])->name('pendaftar.verifikasi');
+    Route::delete('/pendaftar/{pendaftar}',          [PendaftarController::class, 'destroy'])->name('pendaftar.destroy');
+    Route::get('/uploads/{folder}/{filename}',       [PendaftarController::class, 'serveFile'])->name('uploads.serve')
+         ->where('folder','kartu_siswa|bukti_pembayaran');
+
+    Route::get('/lomba',               [LombaController::class, 'index'])->name('lomba.index');
+    Route::get('/lomba/create',        [LombaController::class, 'create'])->name('lomba.create');
+    Route::post('/lomba',              [LombaController::class, 'store'])->name('lomba.store');
+    Route::get('/lomba/{lomba}/edit',  [LombaController::class, 'edit'])->name('lomba.edit');
+    Route::put('/lomba/{lomba}',       [LombaController::class, 'update'])->name('lomba.update');
+    Route::patch('/lomba/{lomba}/toggle',[LombaController::class,'toggle'])->name('lomba.toggle');
+    Route::delete('/lomba/{lomba}',    [LombaController::class, 'destroy'])->name('lomba.destroy');
+
+    // Delete khusus file (gambar & guidebook) pada lomba
+    Route::delete('/lomba/{lomba}/gambar',    [LombaController::class, 'deleteGambar'])->name('lomba.delete.gambar');
+    Route::delete('/lomba/{lomba}/guidebook', [LombaController::class, 'deleteGuidebook'])->name('lomba.delete.guidebook');
+
+    Route::get('/settings',  [SettingController::class, 'index'])->name('settings');
+
+    Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+
+    Route::get('/users',             [UserController::class, 'index'])->name('users.index');
+    Route::get('/users/create',      [UserController::class, 'create'])->name('users.create');
+    Route::post('/users',            [UserController::class, 'store'])->name('users.store');
+    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user}',      [UserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}',   [UserController::class, 'destroy'])->name('users.destroy');
+
+    // Sponsor (superadmin only; pengecekan akses ada di SponsorController)
+    Route::get('/sponsor',                 [\App\Http\Controllers\SponsorController::class, 'index'])->name('sponsor.index');
+    Route::get('/sponsor/create',        [\App\Http\Controllers\SponsorController::class, 'create'])->name('sponsor.create');
+    Route::post('/sponsor',              [\App\Http\Controllers\SponsorController::class, 'store'])->name('sponsor.store');
+    Route::get('/sponsor/{sponsor}/edit',[\App\Http\Controllers\SponsorController::class, 'edit'])->name('sponsor.edit');
+    Route::put('/sponsor/{sponsor}',     [\App\Http\Controllers\SponsorController::class, 'update'])->name('sponsor.update');
+    Route::delete('/sponsor/{sponsor}',  [\App\Http\Controllers\SponsorController::class, 'destroy'])->name('sponsor.destroy');
+});
+
