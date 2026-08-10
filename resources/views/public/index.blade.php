@@ -18,13 +18,13 @@
       </div>
     </a>
     <div class="flex items-center gap-2">
-      <a href="{{ route('login') }}" id="nav-login"
+      <!-- <a href="{{ route('login') }}" id="nav-login"
          class="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-xl transition-all text-white/80 hover:text-white hover:bg-white/10">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
         </svg>Login Admin
-      </a>
+      </a> -->
       <a href="{{ route('daftar.form') }}" id="nav-cta"
          class="inline-flex items-center gap-1.5 text-sm font-bold px-4 py-2.5 rounded-xl transition-all active:scale-95 bg-white text-blue-700 hover:bg-blue-50 shadow-sm">
         Daftar Sekarang
@@ -412,11 +412,11 @@
 
     <div class="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
       <p class="text-xs text-gray-500">&copy; {{ $festivalYear }} {{ $festivalName }}. All rights reserved.</p>
-      <a href="{{ route('login') }}" class="text-xs text-gray-600 hover:text-gray-400 transition-colors flex items-center gap-1">
+      <!-- <a href="{{ route('login') }}" class="text-xs text-gray-600 hover:text-gray-400 transition-colors flex items-center gap-1">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
         </svg>Login Admin
-      </a>
+      </a> -->
     </div>
   </div>
 </footer>

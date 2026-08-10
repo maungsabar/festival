@@ -61,7 +61,7 @@
             </div>
 
             {{-- Role badges --}}
-            <div class="space-y-2">
+            <!-- <div class="space-y-2">
                 <p class="text-blue-400 text-xs font-semibold uppercase tracking-wider mb-3">Tingkat Akses</p>
                 @foreach([
                     ['★', 'Super Admin',  'Akses penuh semua data',       'violet'],
@@ -79,7 +79,7 @@
                     </div>
                 </div>
                 @endforeach
-            </div>
+            </div> -->
         </div>
 
         {{-- Back to public --}}
