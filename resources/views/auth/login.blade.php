@@ -236,7 +236,7 @@
                 </div>
 
                 {{-- Demo accounts --}}
-                <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                <!-- <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
                     <button type="button" id="demoToggle" onclick="toggleDemo()"
                             class="w-full flex items-center justify-between px-5 py-4
                                    text-sm text-gray-600 hover:bg-gray-50 transition-colors">
@@ -288,7 +288,7 @@
                             </p>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
                 {{-- Footer --}}
                 <p class="text-center text-xs text-gray-400 mt-6">
