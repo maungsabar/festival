@@ -37,6 +37,16 @@
       <p class="text-gray-500 text-sm mt-1">{{ $festivalName }} {{ $festivalYear }}</p>
     </div>
 
+    {{-- Global status warning --}}
+    @if($pendaftaranStatus !== 'dibuka')
+    <div class="flex items-center gap-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl p-4 mb-5 text-sm font-semibold">
+      <svg class="w-5 h-5 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+      </svg>
+      <span>Pendaftaran saat ini {{ $pendaftaranStatus === 'ditutup' ? 'resmi ditutup' : 'belum dibuka' }}. Formulir tidak dapat dikirim.</span>
+    </div>
+    @endif
+
     {{-- Error alert --}}
     @if($errors->any())
     <div class="flex items-start gap-3 bg-red-50 border border-red-200 rounded-2xl p-4 mb-5">
@@ -332,14 +342,15 @@
 
       {{-- Submit --}}
       <button type="submit" id="submitBtn"
-              class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold
-                     py-4 rounded-2xl text-base transition-all shadow-lg shadow-blue-200
-                     flex items-center justify-center gap-3">
+              @if($pendaftaranStatus !== 'dibuka') disabled @endif
+              class="w-full font-bold py-4 rounded-2xl text-base transition-all shadow-lg flex items-center justify-center gap-3
+                     @if($pendaftaranStatus === 'dibuka') bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white shadow-blue-200
+                     @else bg-gray-300 text-gray-500 cursor-not-allowed shadow-none opacity-80 @endif">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
-        Kirim Pendaftaran
+        {{ $pendaftaranStatus === 'dibuka' ? 'Kirim Pendaftaran' : 'Pendaftaran Nonaktif' }}
       </button>
       <p class="text-center text-xs text-gray-400 mt-3">
         Dengan mendaftar, Anda menyetujui syarat dan ketentuan {{ $festivalName }} {{ $festivalYear }}.

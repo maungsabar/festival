@@ -25,6 +25,7 @@
                 d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
         </svg>Login Admin
       </a> -->
+      @if($pendaftaranStatus === 'dibuka')
       <a href="{{ route('daftar.form') }}" id="nav-cta"
          class="inline-flex items-center gap-1.5 text-sm font-bold px-4 py-2.5 rounded-xl transition-all active:scale-95 bg-white text-blue-700 hover:bg-blue-50 shadow-sm">
         Daftar Sekarang
@@ -32,6 +33,16 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
         </svg>
       </a>
+      @else
+      <button disabled
+              class="inline-flex items-center gap-1.5 text-sm font-bold px-4 py-2.5 rounded-xl bg-gray-200/80 text-gray-400 cursor-not-allowed opacity-80"
+              title="Pendaftaran {{ $pendaftaranStatus === 'ditutup' ? 'Sudah Ditutup' : 'Belum Dibuka' }}">
+        Daftar Sekarang
+        <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+        </svg>
+      </button>
+      @endif
     </div>
   </div>
 </nav>
@@ -110,6 +121,7 @@
     @endif
 
     <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mb-14 animate-slide-up" style="animation-delay:.27s">
+      @if($pendaftaranStatus === 'dibuka')
       <a href="{{ route('daftar.form') }}"
          class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5
                 bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-300 hover:to-orange-300
@@ -121,6 +133,18 @@
         </svg>
         Daftar Sekarang
       </a>
+      @else
+      <button disabled
+              class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5
+                     bg-gray-700/60 border border-gray-600/60 text-gray-400 font-bold px-8 py-4 rounded-2xl text-base cursor-not-allowed opacity-80"
+              title="Pendaftaran {{ $pendaftaranStatus === 'ditutup' ? 'Sudah Ditutup' : 'Belum Dibuka' }}">
+        <svg class="w-5 h-5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+        </svg>
+        Pendaftaran {{ $pendaftaranStatus === 'ditutup' ? 'Ditutup' : 'Belum Dibuka' }}
+      </button>
+      @endif
       <a href="#lomba"
          class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5
                 bg-white/10 hover:bg-white/20 border border-white/20
@@ -244,7 +268,19 @@
         @endif
 
         <div class="mt-3 flex gap-2">
-          @if(!$full)
+          @if($pendaftaranStatus !== 'dibuka')
+            <button disabled
+                    class="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold
+                           bg-gray-100 text-gray-400 py-2.5 rounded-xl cursor-not-allowed opacity-75">
+              Nonaktif
+            </button>
+          @elseif($full)
+            <button disabled
+                    class="flex-1 flex items-center justify-center text-xs font-semibold
+                           bg-red-50 text-red-500 py-2.5 rounded-xl cursor-not-allowed">
+              Kuota Penuh
+            </button>
+          @else
             <a href="{{ route('daftar.form') }}"
                class="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold
                       bg-blue-50 hover:bg-blue-100 text-blue-700 py-2.5 rounded-xl transition-all">
@@ -253,10 +289,6 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
               </svg>
             </a>
-          @else
-            <div class="flex-1 flex items-center justify-center text-xs font-semibold text-gray-400 py-2.5 bg-gray-50 rounded-xl">
-              Kuota Penuh
-            </div>
           @endif
 
           @if($l->file_guidebook)
@@ -504,6 +536,7 @@
   <div class="max-w-2xl mx-auto px-4 sm:px-6 text-center">
     <h2 class="text-2xl sm:text-3xl font-black text-white mb-2">Siap Bergabung?</h2>
     <p class="text-blue-200 text-sm mb-7">Daftarkan dirimu di {{ $festivalName }} {{ $festivalYear }} sebelum kuota penuh!</p>
+    @if($pendaftaranStatus === 'dibuka')
     <a href="{{ route('daftar.form') }}"
        class="inline-flex items-center gap-2.5 bg-white hover:bg-blue-50 text-blue-700
               font-bold px-8 py-4 rounded-2xl text-base transition-all active:scale-95 shadow-xl hover:-translate-y-0.5">
@@ -512,6 +545,17 @@
               d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
       </svg>Mulai Pendaftaran
     </a>
+    @else
+    <button disabled
+            class="inline-flex items-center gap-2.5 bg-blue-900/60 border border-blue-400/30 text-blue-200/60
+                   font-bold px-8 py-4 rounded-2xl text-base cursor-not-allowed opacity-80 shadow-none"
+            title="Pendaftaran {{ $pendaftaranStatus === 'ditutup' ? 'Sudah Ditutup' : 'Belum Dibuka' }}">
+      <svg class="w-5 h-5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+      </svg>Pendaftaran {{ $pendaftaranStatus === 'ditutup' ? 'Ditutup' : 'Belum Dibuka' }}
+    </button>
+    @endif
   </div>
 </section>
 

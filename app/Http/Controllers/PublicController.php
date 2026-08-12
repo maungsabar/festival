@@ -11,13 +11,23 @@ class PublicController extends Controller
 {
     public function index()
     {
-        $lombas   = Lomba::where('aktif',1)->orderBy('gender')->orderBy('nama_lomba')->get();
+        $lombas   = Lomba::withCount('pendaftars')->where('aktif',1)->orderBy('gender')->orderBy('nama_lomba')->get();
         $pemenang = Lomba::where('tampil_pemenang',true)->whereNotNull('pemenang')->get();
         $sponsors = Sponsor::where('aktif',1)->orderBy('nama')->get();
         return view('public.index', compact('lombas','pemenang','sponsors'));
     }
 
-    public function showForm() { return view('public.daftar'); }
+    public function showForm()
+    {
+        $status = \App\Models\Setting::get('pendaftaran_status', 'dibuka');
+        if ($status !== 'dibuka') {
+            $msg = $status === 'ditutup'
+                ? \App\Models\Setting::get('pendaftaran_ditutup_teks', 'Pendaftaran Resmi Ditutup')
+                : \App\Models\Setting::get('pendaftaran_belum_teks', 'Pendaftaran Belum Dibuka');
+            return redirect()->route('home')->with('warning', $msg);
+        }
+        return view('public.daftar');
+    }
 
     public function getLomba(Request $request)
     {
@@ -42,6 +52,11 @@ class PublicController extends Controller
 
     public function store(Request $request)
     {
+        $status = \App\Models\Setting::get('pendaftaran_status', 'dibuka');
+        if ($status !== 'dibuka') {
+            return back()->withErrors(['id_lomba' => 'Pendaftaran saat ini sedang tidak dibuka.'])->withInput();
+        }
+
         $lomba  = $request->id_lomba ? Lomba::find($request->id_lomba) : null;
         $isTeam = $lomba && $lomba->tipe === 'team';
         $maxA   = $lomba ? $lomba->max_anggota : 1;
