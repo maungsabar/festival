@@ -4,26 +4,6 @@
 @section('admin_content')
 @php $role = session('admin_user.role'); @endphp
 
-{{-- Page header --}}
-<div class="flex flex-wrap items-start justify-between gap-3 mb-6">
-    <div>
-        <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">Selamat datang,</p>
-        <h1 class="text-xl sm:text-2xl font-black text-gray-900 mt-0.5">
-            {{ session('admin_user.username') }} 👋
-        </h1>
-        <p class="text-sm text-gray-400 mt-0.5">
-            @if($role==='superadmin') Akses penuh — semua data
-            @elseif($role==='admin_putra') Mengelola data kategori Putra
-            @else Mengelola data kategori Putri
-            @endif
-        </p>
-    </div>
-    <div class="flex items-center gap-2 bg-white border border-gray-100 rounded-xl px-3 py-2 shadow-sm text-xs text-gray-500">
-        <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-        <span id="live-time"></span>
-    </div>
-</div>
-
 {{-- ── Stat Cards ── --}}
 <div class="grid grid-cols-2 {{ $role==='superadmin' ? 'xl:grid-cols-4' : 'xl:grid-cols-3' }} gap-3 sm:gap-4 mb-6">
 

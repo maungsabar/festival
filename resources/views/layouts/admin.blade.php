@@ -6,9 +6,11 @@
     $username   = session('admin_user.username');
     $accentFrom = match($role) { 'admin_putra' => '#1d4ed8', 'admin_putri' => '#be185d', default => '#4f46e5' };
     $accentTo   = match($role) { 'admin_putra' => '#1e3a8a', 'admin_putri' => '#831843', default => '#312e81' };
-    $roleLabel  = match($role) { 'admin_putra' => 'Admin Putra', 'admin_putri' => 'Admin Putri', default => 'Super Admin' };
-    $roleIcon   = match($role) { 'admin_putra' => '♂', 'admin_putri' => '♀', default => '★' };
-    $rolePill   = match($role) { 'admin_putra' => 'bg-blue-500/25 text-blue-200', 'admin_putri' => 'bg-pink-500/25 text-pink-200', default => 'bg-violet-500/25 text-violet-200' };
+    $roleLabel       = match($role) { 'admin_putra' => 'Admin Putra', 'admin_putri' => 'Admin Putri', default => 'Super Admin' };
+    $roleIcon        = match($role) { 'admin_putra' => '♂', 'admin_putri' => '♀', default => '★' };
+    $rolePillSidebar = match($role) { 'admin_putra' => 'bg-blue-500/25 text-blue-200', 'admin_putri' => 'bg-pink-500/25 text-pink-200', default => 'bg-violet-500/25 text-violet-200' };
+    $rolePillHeader  = match($role) { 'admin_putra' => 'bg-blue-50 text-blue-700 border border-blue-200', 'admin_putri' => 'bg-pink-50 text-pink-700 border border-pink-200', default => 'bg-violet-50 text-violet-700 border border-violet-200' };
+    $roleDesc        = match($role) { 'admin_putra' => 'Mengelola data kategori Putra', 'admin_putri' => 'Mengelola data kategori Putri', default => 'Akses penuh — semua data' };
 
     $navItems = [];
     if ($role === 'superadmin') {
@@ -74,18 +76,18 @@
            -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out"
     style="background: linear-gradient(170deg, {{ $accentFrom }}, {{ $accentTo }})">
 
-    {{-- Brand --}}
-    <div class="shrink-0 flex items-center gap-3 px-5 py-5 border-b border-white/10">
-      <div class="w-9 h-9 rounded-xl bg-white/80 flex items-center justify-center shrink-0 overflow-hidden border border-white/20">
+    {{-- Brand (Header height matched to h-[60px]) --}}
+    <div class="shrink-0 flex items-center gap-3 px-4 h-[60px] border-b border-white/10">
+      <div class="w-8 h-8 rounded-xl bg-white/80 flex items-center justify-center shrink-0 overflow-hidden border border-white/20">
         @if($festivalLogo)
           <img src="{{ asset('storage/logos/'.$festivalLogo) }}" class="w-full h-full object-contain p-0.5" alt="">
         @else
-          <span class="text-white text-lg">🏆</span>
+          <span class="text-white text-base">🏆</span>
         @endif
       </div>
       <div class="min-w-0 flex-1">
         <p class="text-white font-bold text-sm leading-tight truncate">{{ $festivalName }}</p>
-        <span class="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full mt-0.5 {{ $rolePill }}">
+        <span class="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full mt-0.5 {{ $rolePillSidebar }}">
           {{ $roleIcon }} {{ $roleLabel }}
         </span>
       </div>
@@ -169,25 +171,40 @@
   {{-- ── Main wrapper ── --}}
   <div class="flex-1 flex flex-col min-h-screen lg:ml-64">
 
-    {{-- Mobile top bar --}}
-    <header class="lg:hidden sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-gray-200 flex items-center gap-3 px-4 py-3 shadow-sm">
-      <button onclick="openSidebar()" class="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-600">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-        </svg>
-      </button>
-      <div class="flex items-center gap-2">
-        <div class="w-7 h-7 rounded-lg overflow-hidden shrink-0" style="background:{{ $accentFrom }}">
-          @if($festivalLogo)
-            <img src="{{ asset('storage/logos/'.$festivalLogo) }}" class="w-full h-full object-contain p-0.5" alt="">
-          @else
-            <span class="w-full h-full flex items-center justify-center text-white text-xs">🏆</span>
-          @endif
+    {{-- Sticky Top Header (Compact h-[60px] & Fixed on Scroll) --}}
+    <header class="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-gray-200/80 shadow-sm px-4 sm:px-6 h-[60px] flex items-center justify-between transition-all">
+      {{-- Left Side: Mobile Menu + Greeting, Hand Wave, Role & Access Status --}}
+      <div class="flex items-center gap-3">
+        <button onclick="openSidebar()" class="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 focus:outline-none" aria-label="Buka Menu">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+
+        <div>
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="text-xs text-gray-400 font-medium hidden xs:inline">Selamat datang,</span>
+            <h1 class="text-sm sm:text-base font-black text-gray-900 leading-tight flex items-center gap-1">
+              <span>{{ $username }}</span>
+              <span class="inline-block animate-bounce" style="animation-duration:2s">👋</span>
+            </h1>
+            <span class="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-full {{ $rolePillHeader }}">
+              {{ $roleIcon }} {{ $roleLabel }}
+            </span>
+          </div>
+          <p class="text-[11px] sm:text-xs text-gray-400 font-medium truncate max-w-[220px] sm:max-w-none">
+            {{ $roleDesc }}
+          </p>
         </div>
-        <span class="font-bold text-gray-800 text-sm truncate">{{ $festivalName }}</span>
       </div>
-      {{-- Live clock mobile --}}
-      <div class="ml-auto text-xs text-gray-400 hidden sm:block" id="mobile-clock"></div>
+
+      {{-- Right Side: Hari, Tanggal, Bulan, Tahun & Jam Live --}}
+      <div class="flex items-center gap-2.5">
+        <div class="flex items-center gap-2 bg-gray-50 border border-gray-200/70 rounded-xl px-3 py-1.5 text-xs text-gray-600 font-semibold shadow-sm">
+          <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shrink-0"></span>
+          <span id="top-admin-datetime" class="capitalize"></span>
+        </div>
+      </div>
     </header>
 
     {{-- Content --}}
@@ -219,12 +236,16 @@ function closeSidebar() {
 window.addEventListener('resize', () => {
   if (window.innerWidth >= 1024) closeSidebar();
 });
-// Mobile clock
-function mClock() {
-  const el = document.getElementById('mobile-clock');
-  if (el) el.textContent = new Date().toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+// Top header clock (Hari, Tanggal, Bulan, Tahun & Jam)
+function topClock() {
+  const el = document.getElementById('top-admin-datetime');
+  if (!el) return;
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  el.textContent = `${dateStr} • ${timeStr}`;
 }
-mClock(); setInterval(mClock, 1000);
+topClock(); setInterval(topClock, 1000);
 </script>
 @endpush
 
