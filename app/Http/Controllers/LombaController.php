@@ -40,14 +40,16 @@ class LombaController extends Controller
         $gambarName = null;
         if ($request->hasFile('gambar')) {
             $gambar = $request->file('gambar');
-            $gambarName = time() . '_lomba_' . uniqid() . '.' . $gambar->getClientOriginalExtension();
+            $ext = $gambar->extension() ?: $gambar->getClientOriginalExtension();
+            $gambarName = time() . '_lomba_' . uniqid() . '.' . $ext;
             $gambar->move(storage_path('app/public/lomba_images'), $gambarName);
         }
 
         $guidebookName = null;
         if ($request->hasFile('file_guidebook')) {
             $guidebook = $request->file('file_guidebook');
-            $guidebookName = time() . '_guidebook_' . uniqid() . '.' . $guidebook->getClientOriginalExtension();
+            $ext = $guidebook->extension() ?: $guidebook->getClientOriginalExtension();
+            $guidebookName = time() . '_guidebook_' . uniqid() . '.' . $ext;
             $guidebook->move(storage_path('app/public/guidebooks'), $guidebookName);
         }
 
@@ -96,7 +98,8 @@ class LombaController extends Controller
                 @unlink(storage_path('app/public/lomba_images/' . $lomba->gambar));
             }
             $gambar = $request->file('gambar');
-            $gambarName = time() . '_lomba_' . uniqid() . '.' . $gambar->getClientOriginalExtension();
+            $ext = $gambar->extension() ?: $gambar->getClientOriginalExtension();
+            $gambarName = time() . '_lomba_' . uniqid() . '.' . $ext;
             $gambar->move(storage_path('app/public/lomba_images'), $gambarName);
         }
 
@@ -106,7 +109,8 @@ class LombaController extends Controller
                 @unlink(storage_path('app/public/guidebooks/' . $lomba->file_guidebook));
             }
             $guidebook = $request->file('file_guidebook');
-            $guidebookName = time() . '_guidebook_' . uniqid() . '.' . $guidebook->getClientOriginalExtension();
+            $ext = $guidebook->extension() ?: $guidebook->getClientOriginalExtension();
+            $guidebookName = time() . '_guidebook_' . uniqid() . '.' . $ext;
             $guidebook->move(storage_path('app/public/guidebooks'), $guidebookName);
         }
 

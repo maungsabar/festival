@@ -6,11 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', config('app.name', 'Festival Sekolah'))</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['Montserrat', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                    },
                     animation: {
                         'fade-in': 'fadeIn .4s ease both',
                         'slide-up': 'slideUp .4s ease both',
@@ -29,6 +35,12 @@
 
         /* Page transition */
         body { animation: fadeIn .25s ease; }
+
+        /* Force Montserrat font everywhere */
+        * { font-family: 'Montserrat', ui-sans-serif, system-ui, sans-serif; }
+
+        /* Broken image fallback */
+        img[src]:not([src='']) { min-width: 8px; min-height: 8px; }
 
         /* Focus ring cleanup */
         :focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }

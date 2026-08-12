@@ -27,12 +27,20 @@ class Lomba extends Model
 
     public function isFull(): bool {
         if (is_null($this->kuota) || $this->kuota <= 0) return false;
-        return $this->pendaftars()->count() >= $this->kuota;
+        // PERF: Use eager-loaded pendaftars_count if available (via withCount())
+        $count = array_key_exists('pendaftars_count', $this->attributes)
+            ? (int) $this->attributes['pendaftars_count']
+            : $this->pendaftars()->count();
+        return $count >= $this->kuota;
     }
 
     public function sisaKuota(): ?int {
         if (is_null($this->kuota) || $this->kuota <= 0) return null;
-        return max(0, $this->kuota - $this->pendaftars()->count());
+        // PERF: Use eager-loaded pendaftars_count if available (via withCount())
+        $count = array_key_exists('pendaftars_count', $this->attributes)
+            ? (int) $this->attributes['pendaftars_count']
+            : $this->pendaftars()->count();
+        return max(0, $this->kuota - $count);
     }
 }
 

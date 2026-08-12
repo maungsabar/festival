@@ -1,4 +1,6 @@
-*
-!kartu_siswa/
-!bukti_pembayaran/
-!.gitignore
+# Abaikan file sensitif uploads user (kartu siswa & bukti bayar)
+# tapi IZINKAN file gambar publik (logo, lomba, sponsor, guidebook)
+kartu_siswa/*
+!kartu_siswa/.gitkeep
+bukti_pembayaran/*
+!bukti_pembayaran/.gitkeep

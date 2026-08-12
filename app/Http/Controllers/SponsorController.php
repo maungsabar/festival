@@ -40,7 +40,8 @@ class SponsorController extends Controller
         $logoName = null;
         if ($request->hasFile('logo')) {
             $logoFile = $request->file('logo');
-            $logoName = time() . '_sponsor_' . uniqid() . '.' . $logoFile->getClientOriginalExtension();
+            $ext = $logoFile->extension() ?: $logoFile->getClientOriginalExtension();
+            $logoName = time() . '_sponsor_' . uniqid() . '.' . $ext;
             $logoFile->move(storage_path('app/public/sponsors'), $logoName);
         }
 
@@ -76,7 +77,8 @@ class SponsorController extends Controller
                 @unlink(storage_path('app/public/sponsors/' . $sponsor->logo));
             }
             $logoFile = $request->file('logo');
-            $logoName = time() . '_sponsor_' . uniqid() . '.' . $logoFile->getClientOriginalExtension();
+            $ext = $logoFile->extension() ?: $logoFile->getClientOriginalExtension();
+            $logoName = time() . '_sponsor_' . uniqid() . '.' . $ext;
             $logoFile->move(storage_path('app/public/sponsors'), $logoName);
         }
 

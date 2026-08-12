@@ -30,7 +30,7 @@ class UserController extends Controller
         $this->guard();
         $request->validate([
             'username' => 'required|string|max:50|unique:users,username|alpha_dash',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => 'required|string|min:8|confirmed',
             'role'     => 'required|in:superadmin,admin_putra,admin_putri',
         ], [
             'username.required'   => 'Username wajib diisi.',
@@ -60,7 +60,7 @@ class UserController extends Controller
         $this->guard();
         $request->validate([
             'username' => 'required|string|max:50|unique:users,username,'.$user->id.'|alpha_dash',
-            'password' => 'nullable|string|min:6|confirmed',
+            'password' => 'nullable|string|min:8|confirmed',
             'role'     => 'required|in:superadmin,admin_putra,admin_putri',
         ], [
             'username.unique'    => 'Username sudah digunakan.',

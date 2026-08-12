@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth.admin' => \App\Http\Middleware\AdminAuth::class,
         ]);
 
+        // SECURITY: Tambahkan Security Headers ke semua response
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+
         // Laravel 11: tidak ada Http/Kernel.php lagi.
         // Semua middleware global & grup dikonfigurasi di sini.
         // Grup 'web' sudah otomatis include: EncryptCookies, AddQueuedCookies,

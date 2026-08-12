@@ -28,6 +28,9 @@ class AuthController extends Controller
         // Laravel 11: password cast 'hashed' menyimpan hash bcrypt.
         // Gunakan Hash::check() untuk verifikasi.
         if ($user && Hash::check($request->password, $user->password)) {
+            // SECURITY: Regenerate session ID to prevent Session Fixation Attack
+            $request->session()->regenerate();
+
             session([
                 'admin_user' => [
                     'id'       => $user->id,
@@ -46,7 +49,9 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->session()->forget('admin_user');
+        // SECURITY: Invalidate entire session (not just forget the key)
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
         return redirect()->route('login')->with('info', 'Berhasil logout.');
     }
 }

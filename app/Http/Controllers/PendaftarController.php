@@ -88,8 +88,28 @@ class PendaftarController extends Controller
 
     public function serveFile(string $folder, string $filename)
     {
-        $path=storage_path("app/public/{$folder}/{$filename}");
-        if(!file_exists($path)) abort(404);
-        return response()->file($path);
+        // SECURITY: Whitelist allowed folders only
+        $allowedFolders = ['kartu_siswa', 'bukti_pembayaran'];
+        if (!in_array($folder, $allowedFolders, true)) abort(403);
+
+        // SECURITY: Strip any path traversal sequences (e.g. ../../)
+        $filename = basename($filename);
+        if (empty($filename) || $filename === '.' || $filename === '..') abort(403);
+
+        // SECURITY: Whitelist allowed file extensions
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        if (!in_array($ext, ['jpg','jpeg','png','gif','pdf','webp'], true)) abort(403);
+
+        // SECURITY: Verify the resolved path stays within the expected directory
+        $baseDir  = realpath(storage_path("app/public/{$folder}"));
+        $fullPath = storage_path("app/public/{$folder}/{$filename}");
+        $realPath = realpath($fullPath);
+
+        if (!$realPath || !$baseDir || !str_starts_with($realPath, $baseDir . DIRECTORY_SEPARATOR)) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        if (!file_exists($realPath)) abort(404);
+        return response()->file($realPath);
     }
 }

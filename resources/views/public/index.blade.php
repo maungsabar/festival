@@ -37,8 +37,18 @@
 </nav>
 
 {{-- ── Hero ── --}}
-<section class="relative min-h-screen flex flex-col items-center justify-center pt-16 overflow-hidden
-                bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-950">
+<section class="relative min-h-screen flex flex-col items-center justify-center pt-16 overflow-hidden"
+         style="background-color:{{ $heroBgColor ?: '#0a1628' }}">
+
+  {{-- Hero Background Image --}}
+  @if($heroBgImage)
+  <div class="absolute inset-0 pointer-events-none">
+    <img src="{{ asset('storage/hero_bg/'.$heroBgImage) }}"
+         class="absolute inset-0 w-full h-full object-cover"
+         style="opacity:{{ (100 - intval($heroBgOverlayOpacity)) / 100 }};">
+  </div>
+  @endif
+
   <div class="absolute inset-0 pointer-events-none overflow-hidden">
     <div class="absolute -top-48 -right-48 w-[500px] h-[500px] bg-blue-500/15 rounded-full blur-3xl"></div>
     <div class="absolute -bottom-48 -left-48 w-[500px] h-[500px] bg-indigo-600/15 rounded-full blur-3xl"></div>
@@ -63,16 +73,28 @@
     </div>
     @endif
 
-    {{-- Logo --}}
-    @if($festivalLogo)
+    {{-- Logo Hero --}}
+    @php
+      $heroLogo = $festivalLogoHero ?: $festivalLogo;
+    @endphp
+    @if($heroLogo)
     <div class="w-20 h-20 bg-white/80 border border-white/20 rounded-3xl flex items-center justify-center mx-auto mb-5 overflow-hidden p-2 animate-slide-up" style="animation-delay:.1s">
-      <img src="{{ asset('storage/logos/'.$festivalLogo) }}" class="w-full h-full object-contain" alt="">
+      <img src="{{ asset('storage/logos/'.$heroLogo) }}" class="w-full h-full object-contain" alt="">
     </div>
     @endif
 
-    <div class="inline-flex items-center gap-2 bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-semibold px-4 py-1.5 rounded-full mb-6 animate-slide-up" style="animation-delay:.12s">
-      <span class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse"></span>
-      Pendaftaran Resmi Dibuka — {{ $festivalYear }}
+    <div class="inline-flex items-center gap-2 border text-xs font-semibold px-4 py-1.5 rounded-full mb-6 animate-slide-up
+                @if($pendaftaranStatus === 'dibuka') bg-emerald-500/20 border-emerald-400/30 text-emerald-300
+                @elseif($pendaftaranStatus === 'ditutup') bg-red-500/20 border-red-400/30 text-red-300
+                @else bg-gray-500/20 border-gray-400/30 text-gray-300 @endif"
+         style="animation-delay:.12s">
+      <span class="w-1.5 h-1.5 rounded-full animate-pulse
+                   @if($pendaftaranStatus === 'dibuka') bg-emerald-400
+                   @elseif($pendaftaranStatus === 'ditutup') bg-red-400
+                   @else bg-gray-400 @endif"></span>
+      @if($pendaftaranStatus === 'dibuka') {{ $pendaftaranDibukaTeks }} — {{ $festivalYear }}
+      @elseif($pendaftaranStatus === 'ditutup') {{ $pendaftaranDitutupTeks }}
+      @else {{ $pendaftaranBelumTeks }} @endif
     </div>
 
     <h1 class="text-4xl sm:text-5xl md:text-6xl font-black text-white leading-[1.1] mb-4 animate-slide-up" style="animation-delay:.15s">
@@ -291,6 +313,189 @@
       </div>
     </div>
     @endif
+
+    {{-- ── Informasi Kontak Panitia ── --}}
+    @if($contactPhone || $contactWhatsapp || $contactEmail || $contactWaPutra1 || $contactWaPutri1)
+    <div class="mt-12 border-t border-gray-100 pt-10">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-full mb-3">
+          📞 Hubungi Panitia
+        </div>
+        <h3 class="text-xl sm:text-2xl font-black text-gray-900">Informasi Kontak</h3>
+        <p class="text-gray-400 text-sm mt-1">Butuh bantuan? Tim panitia siap membantu kamu</p>
+      </div>
+
+      {{-- Kontak Umum --}}
+      @if($contactPhone || $contactWhatsapp || $contactEmail)
+      <div class="flex flex-wrap justify-center gap-3 mb-8">
+        @if($contactPhone)
+        <a href="tel:{{ $contactPhone }}"
+           class="group flex items-center gap-3 bg-white border border-gray-100 hover:border-blue-200
+                  hover:shadow-md shadow-sm rounded-2xl px-5 py-3.5 transition-all duration-200">
+          <div class="w-9 h-9 bg-blue-100 group-hover:bg-blue-500 rounded-xl flex items-center justify-center shrink-0 transition-colors">
+            <svg class="w-4 h-4 text-blue-600 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Telepon</p>
+            <p class="text-sm font-bold text-gray-800 group-hover:text-blue-700 transition-colors">{{ $contactPhone }}</p>
+          </div>
+        </a>
+        @endif
+
+        @if($contactWhatsapp)
+        <a href="https://wa.me/{{ preg_replace('/[^0-9]/','', $contactWhatsapp) }}" target="_blank"
+           class="group flex items-center gap-3 bg-white border border-gray-100 hover:border-emerald-200
+                  hover:shadow-md shadow-sm rounded-2xl px-5 py-3.5 transition-all duration-200">
+          <div class="w-9 h-9 bg-emerald-100 group-hover:bg-emerald-500 rounded-xl flex items-center justify-center shrink-0 transition-colors">
+            <svg class="w-4 h-4 text-emerald-600 group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">WhatsApp Umum</p>
+            <p class="text-sm font-bold text-gray-800 group-hover:text-emerald-700 transition-colors">{{ $contactWhatsapp }}</p>
+          </div>
+        </a>
+        @endif
+
+        @if($contactEmail)
+        <a href="mailto:{{ $contactEmail }}"
+           class="group flex items-center gap-3 bg-white border border-gray-100 hover:border-violet-200
+                  hover:shadow-md shadow-sm rounded-2xl px-5 py-3.5 transition-all duration-200">
+          <div class="w-9 h-9 bg-violet-100 group-hover:bg-violet-500 rounded-xl flex items-center justify-center shrink-0 transition-colors">
+            <svg class="w-4 h-4 text-violet-600 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Email</p>
+            <p class="text-sm font-bold text-gray-800 group-hover:text-violet-700 transition-colors">{{ $contactEmail }}</p>
+          </div>
+        </a>
+        @endif
+      </div>
+      @endif
+
+      {{-- Kontak WhatsApp per Divisi --}}
+      @if($contactWaPutra1 || $contactWaPutra2 || $contactWaPutri1 || $contactWaPutri2)
+      <div class="grid sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+
+        {{-- Divisi Putra --}}
+        @if($contactWaPutra1 || $contactWaPutra2)
+        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-5">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center shrink-0">
+              <span class="text-white text-sm font-black">♂</span>
+            </div>
+            <div>
+              <p class="font-bold text-blue-900 text-sm">Divisi Putra</p>
+              <p class="text-blue-400 text-[10px]">Hubungi via WhatsApp</p>
+            </div>
+          </div>
+          <div class="space-y-2.5">
+            @if($contactWaPutra1)
+            <a href="https://wa.me/{{ preg_replace('/[^0-9]/','', $contactWaPutra1) }}" target="_blank"
+               class="flex items-center gap-3 bg-white hover:bg-emerald-50 border border-blue-100 hover:border-emerald-300
+                      rounded-xl px-3.5 py-3 transition-all duration-200 group">
+              <div class="w-8 h-8 bg-emerald-100 group-hover:bg-emerald-500 rounded-lg flex items-center justify-center shrink-0 transition-colors">
+                <svg class="w-3.5 h-3.5 text-emerald-600 group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{{ $contactWaPutra1Nama }}</p>
+                <p class="text-sm font-bold text-gray-800 group-hover:text-emerald-700 transition-colors">{{ $contactWaPutra1 }}</p>
+              </div>
+              <svg class="w-4 h-4 text-gray-300 group-hover:text-emerald-400 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+            @endif
+            @if($contactWaPutra2)
+            <a href="https://wa.me/{{ preg_replace('/[^0-9]/','', $contactWaPutra2) }}" target="_blank"
+               class="flex items-center gap-3 bg-white hover:bg-emerald-50 border border-blue-100 hover:border-emerald-300
+                      rounded-xl px-3.5 py-3 transition-all duration-200 group">
+              <div class="w-8 h-8 bg-emerald-100 group-hover:bg-emerald-500 rounded-lg flex items-center justify-center shrink-0 transition-colors">
+                <svg class="w-3.5 h-3.5 text-emerald-600 group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{{ $contactWaPutra2Nama }}</p>
+                <p class="text-sm font-bold text-gray-800 group-hover:text-emerald-700 transition-colors">{{ $contactWaPutra2 }}</p>
+              </div>
+              <svg class="w-4 h-4 text-gray-300 group-hover:text-emerald-400 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+            @endif
+          </div>
+        </div>
+        @endif
+
+        {{-- Divisi Putri --}}
+        @if($contactWaPutri1 || $contactWaPutri2)
+        <div class="bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-100 rounded-2xl p-5">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-8 h-8 bg-pink-500 rounded-xl flex items-center justify-center shrink-0">
+              <span class="text-white text-sm font-black">♀</span>
+            </div>
+            <div>
+              <p class="font-bold text-pink-900 text-sm">Divisi Putri</p>
+              <p class="text-pink-400 text-[10px]">Hubungi via WhatsApp</p>
+            </div>
+          </div>
+          <div class="space-y-2.5">
+            @if($contactWaPutri1)
+            <a href="https://wa.me/{{ preg_replace('/[^0-9]/','', $contactWaPutri1) }}" target="_blank"
+               class="flex items-center gap-3 bg-white hover:bg-emerald-50 border border-pink-100 hover:border-emerald-300
+                      rounded-xl px-3.5 py-3 transition-all duration-200 group">
+              <div class="w-8 h-8 bg-emerald-100 group-hover:bg-emerald-500 rounded-lg flex items-center justify-center shrink-0 transition-colors">
+                <svg class="w-3.5 h-3.5 text-emerald-600 group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{{ $contactWaPutri1Nama }}</p>
+                <p class="text-sm font-bold text-gray-800 group-hover:text-emerald-700 transition-colors">{{ $contactWaPutri1 }}</p>
+              </div>
+              <svg class="w-4 h-4 text-gray-300 group-hover:text-emerald-400 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+            @endif
+            @if($contactWaPutri2)
+            <a href="https://wa.me/{{ preg_replace('/[^0-9]/','', $contactWaPutri2) }}" target="_blank"
+               class="flex items-center gap-3 bg-white hover:bg-emerald-50 border border-pink-100 hover:border-emerald-300
+                      rounded-xl px-3.5 py-3 transition-all duration-200 group">
+              <div class="w-8 h-8 bg-emerald-100 group-hover:bg-emerald-500 rounded-lg flex items-center justify-center shrink-0 transition-colors">
+                <svg class="w-3.5 h-3.5 text-emerald-600 group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{{ $contactWaPutri2Nama }}</p>
+                <p class="text-sm font-bold text-gray-800 group-hover:text-emerald-700 transition-colors">{{ $contactWaPutri2 }}</p>
+              </div>
+              <svg class="w-4 h-4 text-gray-300 group-hover:text-emerald-400 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+            @endif
+          </div>
+        </div>
+        @endif
+
+      </div>
+      @endif
+    </div>
+    @endif
+    {{-- ── End Kontak Panitia ── --}}
+
   </div>
 </section>
 
@@ -410,8 +615,8 @@
       </div>
     </div>
 
-    <div class="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-      <p class="text-xs text-gray-500">&copy; {{ $festivalYear }} {{ $festivalName }}. All rights reserved.</p>
+    <div class="border-t border-gray-800 pt-6 flex justify-center items-center">
+      <p class="text-xs text-gray-500 text-center">&copy; {{ $festivalYear }} {{ $festivalName }}. All rights reserved.</p>
       <!-- <a href="{{ route('login') }}" class="text-xs text-gray-600 hover:text-gray-400 transition-colors flex items-center gap-1">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
@@ -420,6 +625,25 @@
     </div>
   </div>
 </footer>
+
+{{-- ── Tombol Back to Top ── --}}
+<button id="btn-back-top"
+        onclick="window.scrollTo({top:0,behavior:'smooth'})"
+        aria-label="Kembali ke atas"
+        style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;
+               width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;
+               background:linear-gradient(135deg,#2563eb,#4f46e5);
+               box-shadow:0 8px 24px rgba(37,99,235,0.4);
+               display:flex;align-items:center;justify-content:center;
+               opacity:0;transform:translateY(12px) scale(0.85);
+               transition:opacity .3s ease,transform .3s ease;
+               pointer-events:none;">
+  <svg width="20" height="20" fill="none" stroke="white" stroke-width="2.5"
+       stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+    <path d="M5 15l7-7 7 7"/>
+  </svg>
+</button>
+
 @endsection
 
 @push('scripts')
@@ -441,6 +665,17 @@ function onScroll() {
 }
 window.addEventListener('scroll', onScroll, {passive:true});
 onScroll();
+
+// Back to Top button
+const btnTop = document.getElementById('btn-back-top');
+function toggleBackTop() {
+  const show = window.scrollY > 300;
+  btnTop.style.opacity        = show ? '1'                      : '0';
+  btnTop.style.transform      = show ? 'translateY(0) scale(1)' : 'translateY(12px) scale(0.85)';
+  btnTop.style.pointerEvents  = show ? 'auto'                   : 'none';
+}
+window.addEventListener('scroll', toggleBackTop, {passive: true});
+toggleBackTop();
 
 @if($countdownDate)
 // Countdown Timer

@@ -15,7 +15,8 @@ Route::get('/daftar/sukses', [PublicController::class, 'sukses'])->name('daftar.
 Route::get('/api/lomba', [PublicController::class, 'getLomba'])->name('api.lomba');
 
 Route::get('/login',  [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+Route::post('/login', [AuthController::class, 'login'])->name('login.post')
+     ->middleware('throttle:5,1'); // SECURITY: max 5 attempts per minute per IP
 Route::post('/logout',[AuthController::class, 'logout'])->name('logout');
 
 Route::middleware(['auth.admin'])->prefix('admin')->name('admin.')->group(function () {

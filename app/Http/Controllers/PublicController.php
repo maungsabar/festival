@@ -24,7 +24,8 @@ class PublicController extends Controller
         $gender = $request->query('gender');
         if (!in_array($gender,['Putra','Putri'])) return response()->json([]);
         return response()->json(
-            Lomba::where('gender',$gender)->where('aktif',1)->orderBy('nama_lomba')->get()
+            Lomba::withCount('pendaftars') // PERF: eager load count to avoid N+1 queries
+            ->where('gender',$gender)->where('aktif',1)->orderBy('nama_lomba')->get()
             ->map(fn($l) => [
                 'id'          => $l->id,
                 'nama_lomba'  => $l->nama_lomba,
@@ -61,9 +62,11 @@ class PublicController extends Controller
         ];
         if ($isTeam) {
             $rules['nama_tim'] = ['required','string','max:255'];
+            $minA = $lomba ? ($lomba->min_anggota ?? 1) : 1;
             for ($i = 2; $i <= $maxA; $i++) {
+                $isReq = ($i <= $minA) ? 'required' : 'nullable';
                 $rules["anggota.{$i}.nisn"] = ['nullable','digits:10'];
-                $rules["anggota.{$i}.nama"] = ['required','string','max:255'];
+                $rules["anggota.{$i}.nama"] = [$isReq,'string','max:255'];
                 $rules["anggota.{$i}.kelas"]= ['nullable','string','max:50'];
             }
         }
@@ -85,11 +88,13 @@ class PublicController extends Controller
 
         $ts       = now()->format('YmdHis');
         $kartu    = $request->file('kartu_siswa');
-        $kName    = $ts.'_'.$request->nisn.'_'.$kartu->getClientOriginalName();
+        $kExt     = $kartu->extension() ?: $kartu->getClientOriginalExtension();
+        $kName    = $ts.'_'.$request->nisn.'_kartu.'.$kExt;
         $kartu->move(storage_path('app/public/kartu_siswa'),$kName);
 
         $bayar    = $request->file('bukti_pembayaran');
-        $bName    = $ts.'_'.$request->nisn.'_'.$bayar->getClientOriginalName();
+        $bExt     = $bayar->extension() ?: $bayar->getClientOriginalExtension();
+        $bName    = $ts.'_'.$request->nisn.'_bukti.'.$bExt;
         $bayar->move(storage_path('app/public/bukti_pembayaran'),$bName);
 
         $pendaftar = Pendaftar::create([
