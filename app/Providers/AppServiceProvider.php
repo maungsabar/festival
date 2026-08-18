@@ -13,10 +13,23 @@ class AppServiceProvider extends ServiceProvider
         if (!app()->runningInConsole() && request()) {
             config(['app.url' => request()->getSchemeAndHttpHost()]);
         }
+        if (config('app.env') === 'production') {
+        \URL::forceScheme('https');
+    }
         Model::shouldBeStrict(!$this->app->isProduction());
         Paginator::useTailwind();
         View::composer('*', function($view) {
             try {
+                $rawBgImages = Setting::get('hero_bg_images');
+                $heroBgImages = [];
+                if ($rawBgImages) {
+                    $heroBgImages = is_array($rawBgImages) ? $rawBgImages : (json_decode($rawBgImages, true) ?: []);
+                }
+                if (empty($heroBgImages)) {
+                    $single = Setting::get('hero_bg_image');
+                    if ($single) $heroBgImages = [$single];
+                }
+
                 $view->with([
                     'festivalName'              => Setting::get('festival_name','Festival Sekolah'),
                     'festivalYear'              => Setting::get('festival_year',date('Y')),
@@ -29,7 +42,8 @@ class AppServiceProvider extends ServiceProvider
                     'pendaftaranBelumTeks'      => Setting::get('pendaftaran_belum_teks','Pendaftaran Belum Dibuka'),
                     'pendaftaranDibukaTeks'     => Setting::get('pendaftaran_dibuka_teks','Pendaftaran Resmi Dibuka'),
                     'pendaftaranDitutupTeks'    => Setting::get('pendaftaran_ditutup_teks','Pendaftaran Resmi Ditutup'),
-                    'heroBgImage'               => Setting::get('hero_bg_image'),
+                    'heroBgImage'               => !empty($heroBgImages) ? $heroBgImages[0] : null,
+                    'heroBgImages'              => $heroBgImages,
                     'heroBgColor'               => Setting::get('hero_bg_color','#0a1628'),
                     'heroBgOverlayOpacity'      => Setting::get('hero_bg_overlay_opacity','70'),
                     'socialInstagram'           => Setting::get('social_instagram'),

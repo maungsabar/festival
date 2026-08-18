@@ -23,7 +23,7 @@ class Setting extends Model
             'social_instagram','social_tiktok','social_youtube','social_facebook',
             'contact_phone','contact_email','contact_whatsapp',
             'pendaftaran_status','pendaftaran_belum_teks','pendaftaran_dibuka_teks','pendaftaran_ditutup_teks',
-            'hero_bg_image','hero_bg_color','hero_bg_overlay_opacity',
+            'hero_bg_image','hero_bg_images','hero_bg_color','hero_bg_overlay_opacity',
             'contact_whatsapp_putra_1','contact_whatsapp_putra_2',
             'contact_whatsapp_putri_1','contact_whatsapp_putri_2',
             'contact_whatsapp_putra_1_nama','contact_whatsapp_putra_2_nama',

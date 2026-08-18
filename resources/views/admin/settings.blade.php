@@ -242,9 +242,9 @@
       <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 sm:p-6">
         <h2 class="font-bold text-gray-900 text-sm mb-4 flex items-center gap-2">
           <span class="w-6 h-6 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center text-xs">🌄</span>
-          Hero Background
+          Hero Background (Multiple Slide / Carousel)
         </h2>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div>
             <label class="block text-xs font-semibold text-gray-600 mb-1.5">Warna Background</label>
             <div class="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-2.5">
@@ -261,23 +261,41 @@
                    class="w-full accent-indigo-500">
             <p class="text-[10px] text-gray-400 mt-1">Tinggi = gambar lebih gelap</p>
           </div>
-          <div class="flex flex-col justify-between">
-            @if($settings['hero_bg_image'])
-            <div>
-              <p class="text-xs font-semibold text-gray-600 mb-1">Gambar Saat Ini</p>
-              <img src="{{ asset('storage/hero_bg/'.$settings['hero_bg_image']) }}" id="heroBgCurrentImg"
-                   class="w-full h-16 object-cover rounded-xl border border-gray-200">
-            </div>
-            <label class="flex items-center gap-1.5 mt-2 cursor-pointer">
+        </div>
+
+        {{-- Galeri Gambar Background Saat Ini --}}
+        @if(!empty($settings['hero_bg_images_list']))
+        <div class="mb-5 bg-gray-50 border border-gray-100 rounded-2xl p-4">
+          <p class="text-xs font-bold text-gray-700 mb-2.5 flex items-center justify-between">
+            <span>Gambar Background Saat Ini ({{ count($settings['hero_bg_images_list']) }} Slide):</span>
+            <label class="inline-flex items-center gap-1.5 cursor-pointer text-red-500 hover:text-red-600 font-normal">
               <input type="checkbox" name="remove_hero_bg" value="1" id="removeHeroBg" class="w-3.5 h-3.5 accent-red-500">
-              <span class="text-xs text-red-500 font-medium">Hapus background</span>
+              <span class="text-xs">Hapus Semua Background</span>
             </label>
-            @endif
+          </p>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            @foreach($settings['hero_bg_images_list'] as $idx => $img)
+            <div class="relative group border border-gray-200 rounded-xl overflow-hidden bg-white p-1.5 flex flex-col justify-between shadow-sm">
+              <div class="w-full h-24 rounded-lg overflow-hidden relative bg-gray-100">
+                <img src="{{ asset('storage/hero_bg/' . $img) }}" class="w-full h-full object-cover">
+                <span class="absolute top-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded backdrop-blur">
+                  Slide {{ $idx + 1 }}
+                </span>
+              </div>
+              <label class="flex items-center gap-1.5 mt-2 cursor-pointer text-red-600 hover:text-red-700">
+                <input type="checkbox" name="delete_hero_bg_images[]" value="{{ $img }}" class="w-3.5 h-3.5 accent-red-500 rounded">
+                <span class="text-[11px] font-semibold">Hapus gambar ini</span>
+              </label>
+            </div>
+            @endforeach
           </div>
         </div>
+        @endif
+
+        {{-- Upload Gambar Baru (Multiple) --}}
         <label id="heroBgLabel" class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-200
                hover:border-indigo-400 hover:bg-indigo-50/30 rounded-2xl p-5 cursor-pointer transition-all">
-          <input type="file" name="hero_bg_image" id="heroBgInput" accept=".jpg,.jpeg,.png,.webp" class="sr-only">
+          <input type="file" name="hero_bg_images[]" id="heroBgInput" accept=".jpg,.jpeg,.png,.webp" multiple class="sr-only">
           <div id="heroBgIdle" class="text-center">
             <div class="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-2">
               <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -285,16 +303,17 @@
                       d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
               </svg>
             </div>
-            <p class="text-xs text-gray-500 font-semibold">Upload gambar background hero</p>
-            <p class="text-[10px] text-gray-400 mt-0.5">JPG, PNG, WebP • Max 5MB • Rekomendasi 1920×1080</p>
+            <p class="text-xs text-gray-500 font-semibold">Tambah / Upload Gambar Background Baru</p>
+            <p class="text-[10px] text-gray-400 mt-0.5">Bisa pilih 2 gambar atau lebih sekaligus (JPG, PNG, WebP • Max 5MB per file)</p>
           </div>
-          <div id="heroBgDone" class="hidden text-center">
-            <img id="heroBgPreviewNew" src="" class="w-full max-h-24 object-cover rounded-xl border border-gray-200 mx-auto mb-1" alt="">
-            <p id="heroBgFileName" class="text-xs font-semibold text-gray-700 truncate max-w-xs mx-auto"></p>
-            <p class="text-[10px] text-indigo-600 mt-0.5">✓ File dipilih</p>
+          <div id="heroBgDone" class="hidden w-full text-center">
+            <div id="heroBgNewList" class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2"></div>
+            <p id="heroBgFileName" class="text-xs font-semibold text-indigo-600 truncate max-w-xs mx-auto"></p>
+            <p class="text-[10px] text-indigo-600 mt-0.5">✓ File dipilih dan siap disimpan</p>
           </div>
         </label>
-        @error('hero_bg_image')<p class="text-red-500 text-xs mt-2">{{ $message }}</p>@enderror
+        @error('hero_bg_images')<p class="text-red-500 text-xs mt-2">{{ $message }}</p>@enderror
+        @error('hero_bg_images.*')<p class="text-red-500 text-xs mt-2">{{ $message }}</p>@enderror
       </div>
 
       {{-- Countdown --}}
@@ -491,24 +510,43 @@ document.getElementById('logoHeroInput').addEventListener('change',function(){
   r.readAsDataURL(file);
 });
 
-// Hero Background Image preview
-document.getElementById('heroBgInput').addEventListener('change',function(){
-  const file=this.files[0]; if(!file) return;
-  if(file.size>5*1024*1024){alert('Ukuran background maksimal 5MB!');this.value='';return;}
-  const r=new FileReader();
-  r.onload=e=>{
-    const src=e.target.result;
+// Hero Background Multiple Images preview
+const heroBgInput = document.getElementById('heroBgInput');
+if (heroBgInput) {
+  heroBgInput.addEventListener('change', function() {
+    const files = Array.from(this.files);
+    if (!files.length) return;
+
+    for (let f of files) {
+      if (f.size > 5 * 1024 * 1024) {
+        alert(`Ukuran file "${f.name}" melebihi 5MB!`);
+        this.value = '';
+        return;
+      }
+    }
+
     document.getElementById('heroBgIdle').classList.add('hidden');
-    document.getElementById('heroBgDone').classList.remove('hidden');
-    document.getElementById('heroBgPreviewNew').src=src;
-    document.getElementById('heroBgFileName').textContent=file.name;
-    const bgImg=document.getElementById('heroBgPreviewImg');
-    bgImg.src=src;
-    bgImg.classList.remove('hidden');
-    updateHeroBgOpacity();
-  };
-  r.readAsDataURL(file);
-});
+    const doneEl = document.getElementById('heroBgDone');
+    doneEl.classList.remove('hidden');
+
+    const newList = document.getElementById('heroBgNewList');
+    if (newList) newList.innerHTML = '';
+
+    files.forEach((file) => {
+      const r = new FileReader();
+      r.onload = e => {
+        const div = document.createElement('div');
+        div.className = 'relative h-20 rounded-lg overflow-hidden border border-indigo-200 bg-gray-50';
+        div.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">
+          <span class="absolute bottom-1 right-1 bg-indigo-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">+Baru</span>`;
+        if (newList) newList.appendChild(div);
+      };
+      r.readAsDataURL(file);
+    });
+
+    document.getElementById('heroBgFileName').textContent = `${files.length} gambar baru dipilih`;
+  });
+}
 
 // Hero Background Color
 const heroBgColorEl=document.getElementById('heroBgColor');

@@ -10,6 +10,17 @@ class SettingController extends Controller
     {
         if (session('admin_user.role') !== 'superadmin') abort(403);
         $s = fn($k,$d='') => Setting::get($k,$d);
+
+        $heroBgImagesRaw = $s('hero_bg_images');
+        $heroBgImagesList = [];
+        if ($heroBgImagesRaw) {
+            $heroBgImagesList = is_array($heroBgImagesRaw) ? $heroBgImagesRaw : (json_decode($heroBgImagesRaw, true) ?: []);
+        }
+        if (empty($heroBgImagesList)) {
+            $single = $s('hero_bg_image');
+            if ($single) $heroBgImagesList = [$single];
+        }
+
         $settings = [
             'festival_name'              => $s('festival_name','Festival Sekolah'),
             'festival_year'              => $s('festival_year', date('Y')),
@@ -23,6 +34,7 @@ class SettingController extends Controller
             'pendaftaran_dibuka_teks'    => $s('pendaftaran_dibuka_teks','Pendaftaran Resmi Dibuka'),
             'pendaftaran_ditutup_teks'   => $s('pendaftaran_ditutup_teks','Pendaftaran Resmi Ditutup'),
             'hero_bg_image'              => $s('hero_bg_image'),
+            'hero_bg_images_list'        => $heroBgImagesList,
             'hero_bg_color'              => $s('hero_bg_color','#0a1628'),
             'hero_bg_overlay_opacity'    => $s('hero_bg_overlay_opacity','70'),
             'social_instagram'           => $s('social_instagram'),
@@ -56,6 +68,9 @@ class SettingController extends Controller
             'festival_logo'              => 'nullable|file|mimes:png,jpg,jpeg,svg,webp|max:2048',
             'festival_logo_hero'         => 'nullable|file|mimes:png,jpg,jpeg,svg,webp|max:2048',
             'hero_bg_image'              => 'nullable|file|mimes:jpg,jpeg,png,webp|max:5120',
+            'hero_bg_images.*'           => 'nullable|file|mimes:jpg,jpeg,png,webp|max:5120',
+            'delete_hero_bg_images'      => 'nullable|array',
+            'delete_hero_bg_images.*'    => 'nullable|string',
             'hero_bg_color'              => 'nullable|string|max:20',
             'hero_bg_overlay_opacity'    => 'nullable|integer|min:0|max:100',
             'pendaftaran_status'         => 'nullable|in:belum,dibuka,ditutup',
@@ -127,21 +142,66 @@ class SettingController extends Controller
             Setting::set('festival_logo_hero','');
         }
 
-        // Hero Background Image
-        if ($request->hasFile('hero_bg_image')) {
-            $old = Setting::get('hero_bg_image');
-            if ($old) { $p = storage_path("app/public/hero_bg/{$old}"); if(file_exists($p)) unlink($p); }
-            $file = $request->file('hero_bg_image');
-            $ext  = $file->extension() ?: $file->getClientOriginalExtension();
-            $name = 'hero_bg_'.time().'.'.$ext;
-            $file->move(storage_path('app/public/hero_bg'), $name);
-            Setting::set('hero_bg_image', $name);
+        // Hero Background Images (Multiple Files & Gallery)
+        $rawImages = Setting::get('hero_bg_images');
+        $existingBgList = [];
+        if ($rawImages) {
+            $existingBgList = is_array($rawImages) ? $rawImages : (json_decode($rawImages, true) ?: []);
         }
+        if (empty($existingBgList)) {
+            $single = Setting::get('hero_bg_image');
+            if ($single) $existingBgList = [$single];
+        }
+
+        // Hapus gambar terpilih jika ada yang dicentang hapus
+        if ($request->has('delete_hero_bg_images')) {
+            $toDelete = (array) $request->input('delete_hero_bg_images', []);
+            foreach ($toDelete as $filename) {
+                $path = storage_path("app/public/hero_bg/{$filename}");
+                if (file_exists($path)) {
+                    @unlink($path);
+                }
+                $existingBgList = array_values(array_filter($existingBgList, fn($item) => $item !== $filename));
+            }
+        }
+
+        // Hapus semua jika checkbox remove_hero_bg dicentang
         if ($request->boolean('remove_hero_bg')) {
-            $old = Setting::get('hero_bg_image');
-            if ($old) { $p = storage_path("app/public/hero_bg/{$old}"); if(file_exists($p)) unlink($p); }
-            Setting::set('hero_bg_image','');
+            foreach ($existingBgList as $filename) {
+                $path = storage_path("app/public/hero_bg/{$filename}");
+                if (file_exists($path)) {
+                    @unlink($path);
+                }
+            }
+            $existingBgList = [];
         }
+
+        // Upload multiple gambar baru jika ada
+        if ($request->hasFile('hero_bg_images')) {
+            foreach ($request->file('hero_bg_images') as $file) {
+                if ($file && $file->isValid()) {
+                    $ext  = $file->extension() ?: $file->getClientOriginalExtension();
+                    $name = 'hero_bg_'.time().'_'.uniqid().'.'.$ext;
+                    $file->move(storage_path('app/public/hero_bg'), $name);
+                    $existingBgList[] = $name;
+                }
+            }
+        }
+
+        // Single file upload fallback jika diupload via hero_bg_image
+        if ($request->hasFile('hero_bg_image')) {
+            $file = $request->file('hero_bg_image');
+            if ($file && $file->isValid()) {
+                $ext  = $file->extension() ?: $file->getClientOriginalExtension();
+                $name = 'hero_bg_'.time().'_'.uniqid().'.'.$ext;
+                $file->move(storage_path('app/public/hero_bg'), $name);
+                $existingBgList[] = $name;
+            }
+        }
+
+        $existingBgList = array_values(array_unique($existingBgList));
+        Setting::set('hero_bg_images', json_encode($existingBgList));
+        Setting::set('hero_bg_image', !empty($existingBgList) ? $existingBgList[0] : '');
 
         return redirect()->route('admin.settings')->with('success','Pengaturan berhasil disimpan.');
     }

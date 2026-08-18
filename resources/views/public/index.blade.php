@@ -51,12 +51,20 @@
 <section class="relative min-h-screen flex flex-col items-center justify-center pt-16 overflow-hidden"
          style="background-color:{{ $heroBgColor ?: '#0a1628' }}">
 
-  {{-- Hero Background Image --}}
-  @if($heroBgImage)
-  <div class="absolute inset-0 pointer-events-none">
-    <img src="{{ asset('storage/hero_bg/'.$heroBgImage) }}"
-         class="absolute inset-0 w-full h-full object-cover"
-         style="opacity:{{ (100 - intval($heroBgOverlayOpacity)) / 100 }};">
+  {{-- Hero Background Images (Single or Multi Slide / Carousel) --}}
+  @php
+    $bgList = !empty($heroBgImages) ? $heroBgImages : ($heroBgImage ? [$heroBgImage] : []);
+    $calcOpacity = (100 - intval($heroBgOverlayOpacity)) / 100;
+  @endphp
+
+  @if(count($bgList) > 0)
+  <div class="absolute inset-0 pointer-events-none overflow-hidden" id="hero-bg-carousel">
+    @foreach($bgList as $idx => $bgImg)
+    <img src="{{ asset('storage/hero_bg/' . $bgImg) }}"
+         class="hero-bg-slide absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out"
+         style="opacity: {{ $idx === 0 ? $calcOpacity : 0 }};"
+         data-index="{{ $idx }}">
+    @endforeach
   </div>
   @endif
 
@@ -747,5 +755,17 @@ function updateCountdown() {
 updateCountdown();
 setInterval(updateCountdown, 1000);
 @endif
+
+// Hero Background Carousel (Otomatis ganti slide tiap 5 detik)
+const heroBgSlides = document.querySelectorAll('.hero-bg-slide');
+if (heroBgSlides.length > 1) {
+  let currentHeroBgIndex = 0;
+  const targetOpacity = {{ (100 - intval($heroBgOverlayOpacity)) / 100 }};
+  setInterval(() => {
+    heroBgSlides[currentHeroBgIndex].style.opacity = '0';
+    currentHeroBgIndex = (currentHeroBgIndex + 1) % heroBgSlides.length;
+    heroBgSlides[currentHeroBgIndex].style.opacity = targetOpacity;
+  }, 5000);
+}
 </script>
 @endpush
