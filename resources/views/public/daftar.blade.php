@@ -118,26 +118,41 @@
 
           {{-- Gender --}}
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Jenis Kelamin <span class="text-red-500">*</span></label>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Jenis Kelamin <span class="text-red-500">*</span></label>
             <div class="grid grid-cols-2 gap-2.5">
-              @foreach([['Putra','blue','♂'],['Putri','pink','♀']] as [$g,$c,$sym])
-              <label class="relative cursor-pointer">
-                <input type="radio" name="gender" value="{{ $g }}" class="peer sr-only"
-                       {{ old('gender')===$g?'checked':'' }}>
-                <div class="border-2 rounded-xl p-3 text-center transition-all
-                            peer-checked:border-{{ $c }}-500 peer-checked:bg-{{ $c }}-50
-                            border-gray-200 hover:border-{{ $c }}-300">
-                  <div class="font-bold text-lg text-{{ $c }}-600">{{ $sym }}</div>
-                  <p class="font-semibold text-xs text-gray-800 mt-0.5">{{ $g }}</p>
+              {{-- Putra Option --}}
+              <label class="relative flex items-center justify-between border rounded-xl px-4 py-3 cursor-pointer transition-all active:scale-[0.98] select-none
+                            has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/80 has-[:checked]:shadow-sm
+                            border-gray-200 hover:border-blue-300 hover:bg-blue-50/30">
+                <input type="radio" name="gender" value="Putra" class="sr-only peer" {{ old('gender')==='Putra'?'checked':'' }} required>
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 font-black text-sm flex items-center justify-center shrink-0">♂</div>
+                  <span class="font-semibold text-sm text-gray-800">Putra</span>
+                </div>
+                <div class="w-4 h-4 rounded-full border-2 border-gray-300 peer-checked:border-blue-600 peer-checked:bg-blue-600 flex items-center justify-center shrink-0 transition-all">
+                  <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
                 </div>
               </label>
-              @endforeach
+
+              {{-- Putri Option --}}
+              <label class="relative flex items-center justify-between border rounded-xl px-4 py-3 cursor-pointer transition-all active:scale-[0.98] select-none
+                            has-[:checked]:border-pink-600 has-[:checked]:bg-pink-50/80 has-[:checked]:shadow-sm
+                            border-gray-200 hover:border-pink-300 hover:bg-pink-50/30">
+                <input type="radio" name="gender" value="Putri" class="sr-only peer" {{ old('gender')==='Putri'?'checked':'' }} required>
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-lg bg-pink-100 text-pink-700 font-black text-sm flex items-center justify-center shrink-0">♀</div>
+                  <span class="font-semibold text-sm text-gray-800">Putri</span>
+                </div>
+                <div class="w-4 h-4 rounded-full border-2 border-gray-300 peer-checked:border-pink-600 peer-checked:bg-pink-600 flex items-center justify-center shrink-0 transition-all">
+                  <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+                </div>
+              </label>
             </div>
             @error('gender')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
           {{-- Nama Sekolah --}}
           <div class="sm:col-span-2">
             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nama Sekolah <span class="text-red-500">*</span></label>
@@ -148,8 +163,34 @@
             @error('nama_sekolah')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
           </div>
 
+          {{-- Filter Jenjang Lomba --}}
+          <div class="sm:col-span-1">
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5 flex items-center justify-between">
+              <span>Filter Jenjang Lomba</span>
+              <span class="text-[10px] text-blue-600 font-bold" id="jenjang-label-badge">SEMUA</span>
+            </label>
+            <div class="flex items-center gap-1 bg-gray-100 p-1 rounded-xl border border-gray-200">
+              <button type="button" onclick="setJenjangFilter('SEMUA')" id="filter-btn-SEMUA"
+                      class="filter-jenjang-btn flex-1 text-center py-2 px-1 text-xs font-bold rounded-lg transition-all bg-white text-blue-600 shadow-sm">
+                Semua
+              </button>
+              <button type="button" onclick="setJenjangFilter('SMP')" id="filter-btn-SMP"
+                      class="filter-jenjang-btn flex-1 text-center py-2 px-1 text-xs font-semibold rounded-lg transition-all text-gray-600 hover:text-gray-900">
+                SMP
+              </button>
+              <button type="button" onclick="setJenjangFilter('SMA')" id="filter-btn-SMA"
+                      class="filter-jenjang-btn flex-1 text-center py-2 px-1 text-xs font-semibold rounded-lg transition-all text-gray-600 hover:text-gray-900">
+                SMA
+              </button>
+              <button type="button" onclick="setJenjangFilter('UMUM')" id="filter-btn-UMUM"
+                      class="filter-jenjang-btn flex-1 text-center py-2 px-1 text-xs font-semibold rounded-lg transition-all text-gray-600 hover:text-gray-900">
+                UMUM
+              </button>
+            </div>
+          </div>
+
           {{-- Alamat --}}
-          <div class="sm:col-span-2">
+          <div class="sm:col-span-3">
             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Alamat Sekolah <span class="text-red-500">*</span></label>
             <textarea name="alamat_sekolah" rows="2"
                       class="w-full border {{ $errors->has('alamat_sekolah')?'border-red-400 bg-red-50':'border-gray-200 focus:border-blue-500' }}
@@ -362,10 +403,34 @@
 
 @push('scripts')
 <script>
-const API_URL    = "{{ route('api.lomba') }}";
-const OLD_GENDER = "{{ old('gender') }}";
-const OLD_LOMBA  = "{{ old('id_lomba') }}";
-let currentLomba = null;
+const API_URL     = "{{ route('api.lomba') }}";
+const OLD_GENDER  = "{{ old('gender') }}";
+const OLD_LOMBA   = "{{ old('id_lomba') }}";
+let currentLomba  = null;
+let currentGender = OLD_GENDER || null;
+let rawLombaData  = [];
+let selectedJenjang = 'SEMUA';
+
+// ── Filter Jenjang ───────────────────────────────────────────
+function setJenjangFilter(jenjang) {
+  selectedJenjang = jenjang;
+  const badge = document.getElementById('jenjang-label-badge');
+  if (badge) badge.textContent = jenjang;
+
+  document.querySelectorAll('.filter-jenjang-btn').forEach(btn => {
+    btn.classList.remove('bg-white', 'text-blue-600', 'shadow-sm', 'font-bold');
+    btn.classList.add('text-gray-600', 'font-semibold');
+  });
+  const activeBtn = document.getElementById('filter-btn-' + jenjang);
+  if (activeBtn) {
+    activeBtn.classList.remove('text-gray-600', 'font-semibold');
+    activeBtn.classList.add('bg-white', 'text-blue-600', 'shadow-sm', 'font-bold');
+  }
+
+  if (rawLombaData.length > 0) {
+    renderLombaList();
+  }
+}
 
 // ── NISN counter ─────────────────────────────────────────────
 const nisnEl = document.getElementById('nisn');
@@ -376,6 +441,7 @@ nisnEl.addEventListener('input', function() {
 
 // ── Load lomba ────────────────────────────────────────────────
 function loadLomba(gender) {
+  currentGender = gender;
   document.getElementById('lomba-placeholder').classList.add('hidden');
   document.getElementById('lomba-loading').classList.remove('hidden');
   document.getElementById('lomba-list').classList.add('hidden');
@@ -387,74 +453,99 @@ function loadLomba(gender) {
     .then(r => r.json())
     .then(data => {
       document.getElementById('lomba-loading').classList.add('hidden');
+      rawLombaData = data;
       if (!data.length) {
         document.getElementById('lomba-placeholder').classList.remove('hidden');
         document.getElementById('lomba-placeholder').querySelector('p').textContent = 'Tidak ada lomba tersedia.';
         return;
       }
-      const list  = document.getElementById('lomba-list');
-      const color = gender === 'Putra' ? 'blue' : 'pink';
-      list.innerHTML = '';
-      data.forEach(l => {
-        const isSel = String(l.id) === String(OLD_LOMBA);
-        const isFull = l.is_full;
-        const div = document.createElement('div');
-        div.id = 'lomba-card-' + l.id;
-
-        let kuotaHtml = '';
-        if (l.kuota) {
-          const used  = l.kuota - (l.sisa_kuota ?? 0);
-          const pct   = Math.round(used / l.kuota * 100);
-          kuotaHtml = `<div class="mt-2">
-            <div class="flex items-center justify-between text-[10px] mb-1">
-              <span class="text-gray-400">Kuota: ${used}/${l.kuota}</span>
-              <span class="${isFull?'text-red-500 font-semibold':'text-gray-400'}">${isFull?'Penuh!':l.sisa_kuota+' sisa'}</span>
-            </div>
-            <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-              <div class="${isFull?'bg-red-400':'bg-emerald-400'} h-full rounded-full" style="width:${pct}%"></div>
-            </div>
-          </div>`;
-        }
-
-        let jenjangColor = 'bg-indigo-100 text-indigo-700';
-        if (l.jenjang === 'SMP') jenjangColor = 'bg-teal-100 text-teal-700';
-        else if (l.jenjang === 'UMUM') jenjangColor = 'bg-amber-100 text-amber-700';
-        const jenjangBadge = `<span class="text-[10px] font-semibold ${jenjangColor} px-1.5 py-0.5 rounded-full">${l.jenjang}</span>`;
-
-        const tipeBadge = l.tipe === 'team'
-          ? `<span class="text-[10px] font-semibold bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded-full">👥 Beregu ${l.min_anggota}–${l.max_anggota} org</span>`
-          : `<span class="text-[10px] font-semibold bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">👤 Perorangan</span>`;
-
-        div.className = `flex flex-col border-2 rounded-xl px-4 py-3 transition-all
-          ${isFull ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed' : `cursor-pointer ${isSel?`border-${color}-500 bg-${color}-50`:'border-gray-200 hover:border-gray-300 hover:bg-gray-50'}`}`;
-
-        div.innerHTML = `
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-${color}-100 rounded-lg flex items-center justify-center shrink-0">
-              <svg class="w-4 h-4 text-${color}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="font-semibold text-sm text-gray-800">${l.nama_lomba}</p>
-              <div class="flex items-center gap-1.5 mt-0.5">${jenjangBadge}${tipeBadge}${isFull?'<span class="text-[10px] text-red-500 font-semibold">Kuota Penuh</span>':''}</div>
-            </div>
-            <div id="radio-${l.id}" class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0
-                 ${isSel?`border-${color}-500 bg-${color}-500`:'border-gray-300'}">
-              ${isSel?'<div class="w-2 h-2 bg-white rounded-full"></div>':''}
-            </div>
-          </div>
-          ${kuotaHtml}`;
-
-        if (!isFull) {
-          div.onclick = () => selectLomba(l, color);
-          if (isSel) { currentLomba = l; document.getElementById('id_lomba').value = l.id; if(l.tipe==='team') showTeamSection(l); }
-        }
-        list.appendChild(div);
-      });
-      list.classList.remove('hidden');
+      renderLombaList();
     })
-    .catch(() => { document.getElementById('lomba-loading').classList.add('hidden'); document.getElementById('lomba-placeholder').classList.remove('hidden'); });
+    .catch(() => {
+      document.getElementById('lomba-loading').classList.add('hidden');
+      document.getElementById('lomba-placeholder').classList.remove('hidden');
+    });
+}
+
+function renderLombaList() {
+  const list  = document.getElementById('lomba-list');
+  const color = currentGender === 'Putra' ? 'blue' : 'pink';
+  list.innerHTML = '';
+
+  const filtered = rawLombaData.filter(l => {
+    if (selectedJenjang === 'SEMUA') return true;
+    return l.jenjang === selectedJenjang || l.jenjang === 'UMUM' || l.jenjang === 'SEMUA';
+  });
+
+  if (!filtered.length) {
+    list.innerHTML = `
+      <div class="border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center">
+        <p class="text-sm font-semibold text-gray-500">Tidak ada lomba untuk jenjang <span class="text-blue-600 font-bold">${selectedJenjang}</span> (${currentGender}).</p>
+        <p class="text-xs text-gray-400 mt-1">Coba ganti filter jenjang ke <button type="button" onclick="setJenjangFilter('SEMUA')" class="text-blue-600 font-bold underline">Semua</button>.</p>
+      </div>
+    `;
+    list.classList.remove('hidden');
+    return;
+  }
+
+  filtered.forEach(l => {
+    const isSel = String(l.id) === String(OLD_LOMBA);
+    const isFull = l.is_full;
+    const div = document.createElement('div');
+    div.id = 'lomba-card-' + l.id;
+
+    let kuotaHtml = '';
+    if (l.kuota) {
+      const used  = l.kuota - (l.sisa_kuota ?? 0);
+      const pct   = Math.round(used / l.kuota * 100);
+      kuotaHtml = `<div class="mt-2">
+        <div class="flex items-center justify-between text-[10px] mb-1">
+          <span class="text-gray-400">Kuota: ${used}/${l.kuota}</span>
+          <span class="${isFull?'text-red-500 font-semibold':'text-gray-400'}">${isFull?'Penuh!':l.sisa_kuota+' sisa'}</span>
+        </div>
+        <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div class="${isFull?'bg-red-400':'bg-emerald-400'} h-full rounded-full" style="width:${pct}%"></div>
+        </div>
+      </div>`;
+    }
+
+    let jenjangColor = 'bg-indigo-100 text-indigo-700';
+    if (l.jenjang === 'SMP') jenjangColor = 'bg-teal-100 text-teal-700';
+    else if (l.jenjang === 'UMUM') jenjangColor = 'bg-amber-100 text-amber-700';
+    const jenjangBadge = `<span class="text-[10px] font-semibold ${jenjangColor} px-1.5 py-0.5 rounded-full">${l.jenjang}</span>`;
+
+    const tipeBadge = l.tipe === 'team'
+      ? `<span class="text-[10px] font-semibold bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded-full">👥 Beregu ${l.min_anggota}–${l.max_anggota} org</span>`
+      : `<span class="text-[10px] font-semibold bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">👤 Perorangan</span>`;
+
+    div.className = `flex flex-col border-2 rounded-xl px-4 py-3 transition-all
+      ${isFull ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed' : `cursor-pointer ${isSel?`border-${color}-500 bg-${color}-50`:'border-gray-200 hover:border-gray-300 hover:bg-gray-50'}`}`;
+
+    div.innerHTML = `
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-${color}-100 rounded-lg flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4 text-${color}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-sm text-gray-800">${l.nama_lomba}</p>
+          <div class="flex items-center gap-1.5 mt-0.5">${jenjangBadge}${tipeBadge}${isFull?'<span class="text-[10px] text-red-500 font-semibold">Kuota Penuh</span>':''}</div>
+        </div>
+        <div id="radio-${l.id}" class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0
+             ${isSel?`border-${color}-500 bg-${color}-500`:'border-gray-300'}">
+          ${isSel?'<div class="w-2 h-2 bg-white rounded-full"></div>':''}
+        </div>
+      </div>
+      ${kuotaHtml}`;
+
+    if (!isFull) {
+      div.onclick = () => selectLomba(l, color);
+      if (isSel) { currentLomba = l; document.getElementById('id_lomba').value = l.id; if(l.tipe==='team') showTeamSection(l); }
+    }
+    list.appendChild(div);
+  });
+  list.classList.remove('hidden');
 }
 
 function selectLomba(l, color) {
