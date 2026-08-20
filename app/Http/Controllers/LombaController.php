@@ -3,23 +3,25 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Lomba;
+use App\Http\Controllers\Concerns\ScopesByAdminGender;
 
 class LombaController extends Controller
 {
-    private function allowed(): array {
-        return match(session('admin_user.role')){'admin_putra'=>['Putra'],'admin_putri'=>['Putri'],default=>['Putra','Putri']};
-    }
-    private function check(Lomba $l): void { if(!in_array($l->gender,$this->allowed())) abort(403); }
+    use ScopesByAdminGender;
+
+    // Otorisasi per-record (IDOR) sudah ditangani middleware `gender.access`
+    // pada route group admin (lihat routes/web.php). allowedGenders() di sini
+    // dipakai untuk scope query listing & validasi input.
 
     public function index() {
-        $allowed=$this->allowed();
+        $allowed=$this->allowedGenders();
         $lombas=Lomba::withCount('pendaftars')->whereIn('gender',$allowed)->orderBy('gender')->orderBy('nama_lomba')->get();
         return view('admin.lomba.index',compact('lombas','allowed'));
     }
-    public function create() { return view('admin.lomba.form',['lomba'=>null,'allowed'=>$this->allowed()]); }
+    public function create() { return view('admin.lomba.form',['lomba'=>null,'allowed'=>$this->allowedGenders()]); }
 
     public function store(Request $request) {
-        $allowed=$this->allowed();
+        $allowed=$this->allowedGenders();
         $request->validate([
             'nama_lomba'=>'required|string|max:255',
             'gender'=>['required','in:'.implode(',',$allowed)],
@@ -71,10 +73,10 @@ class LombaController extends Controller
         return redirect()->route('admin.lomba.index')->with('success','Lomba ditambahkan.');
     }
 
-    public function edit(Lomba $lomba) { $this->check($lomba); return view('admin.lomba.form',['lomba'=>$lomba,'allowed'=>$this->allowed()]); }
+    public function edit(Lomba $lomba) { return view('admin.lomba.form',['lomba'=>$lomba,'allowed'=>$this->allowedGenders()]); }
 
     public function update(Request $request, Lomba $lomba) {
-        $this->check($lomba); $allowed=$this->allowed();
+        $allowed=$this->allowedGenders();
         $request->validate([
             'nama_lomba'=>'required|string|max:255',
             'gender'=>['required','in:'.implode(',',$allowed)],
@@ -132,10 +134,9 @@ class LombaController extends Controller
         return redirect()->route('admin.lomba.index')->with('success','Lomba diperbarui.');
     }
 
-    public function toggle(Lomba $lomba) { $this->check($lomba); $lomba->update(['aktif'=>!$lomba->aktif]); return back()->with('success','Status lomba diubah.'); }
+    public function toggle(Lomba $lomba) { $lomba->update(['aktif'=>!$lomba->aktif]); return back()->with('success','Status lomba diubah.'); }
 
     public function deleteGambar(Lomba $lomba) {
-        $this->check($lomba);
         if (!$lomba->gambar) {
             return back()->with('info','Gambar lomba sudah tidak ada.');
         }
@@ -150,7 +151,6 @@ class LombaController extends Controller
     }
 
     public function deleteGuidebook(Lomba $lomba) {
-        $this->check($lomba);
         if (!$lomba->file_guidebook) {
             return back()->with('info','Guidebook lomba sudah tidak ada.');
         }
@@ -165,7 +165,6 @@ class LombaController extends Controller
     }
 
     public function destroy(Lomba $lomba) {
-        $this->check($lomba);
         if($lomba->pendaftars()->count()>0) return back()->with('error','Tidak bisa menghapus lomba karena sudah ada pendaftar.');
         $lomba->delete();
         return redirect()->route('admin.lomba.index')->with('success','Lomba dihapus.');

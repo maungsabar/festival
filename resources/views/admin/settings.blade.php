@@ -93,19 +93,24 @@
     {{-- ── Form Columns ── --}}
     <div class="xl:col-span-2 space-y-5">
 
-      {{-- Status Pendaftaran --}}
-      <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 sm:p-6">
-        <h2 class="font-bold text-gray-900 text-sm mb-4 flex items-center gap-2">
-          <span class="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center text-xs">🚦</span>
+      {{-- Status Pendaftaran — DINONAKTIFKAN, dipindah ke halaman Pengaturan Kategori --}}
+      <div class="bg-gray-50 border border-gray-200 rounded-2xl shadow-sm p-5 sm:p-6 opacity-75">
+        <h2 class="font-bold text-gray-500 text-sm mb-2 flex items-center gap-2">
+          <span class="w-6 h-6 bg-gray-200 text-gray-500 rounded-lg flex items-center justify-center text-xs">🚦</span>
           Status Pendaftaran
+          <span class="text-[10px] font-bold bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full">Nonaktif</span>
         </h2>
+        <p class="text-xs text-gray-400 mb-4">
+          Sudah dipindah ke halaman <strong>Pengaturan</strong> masing-masing Admin Putra &amp; Admin Putri, karena tanggal buka/tutup
+          pendaftaran Putra dan Putri bisa berbeda. Nilai di bawah ini tidak lagi dipakai dan tidak bisa diubah dari sini.
+        </p>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
           @foreach([['belum','Belum Dibuka','bg-gray-100 border-gray-200 text-gray-700','bg-gray-400'],['dibuka','Dibuka','bg-emerald-50 border-emerald-300 text-emerald-800','bg-emerald-500'],['ditutup','Ditutup','bg-red-50 border-red-300 text-red-800','bg-red-500']] as [$val,$lbl,$cls,$dot])
-          <label class="flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all
-                        {{ $settings['pendaftaran_status'] === $val ? $cls . ' ring-2 ring-offset-1 ring-current' : 'border-gray-200 hover:border-gray-300' }}">
-            <input type="radio" name="pendaftaran_status" value="{{ $val }}"
+          <label class="flex items-center gap-3 p-3 rounded-xl border-2 cursor-not-allowed opacity-60
+                        {{ $settings['pendaftaran_status'] === $val ? $cls : 'border-gray-200' }}">
+            <input type="radio" name="pendaftaran_status_disabled" value="{{ $val }}"
                    {{ $settings['pendaftaran_status'] === $val ? 'checked' : '' }}
-                   class="sr-only" id="status_{{ $val }}">
+                   disabled class="sr-only" id="status_{{ $val }}">
             <span class="w-3 h-3 rounded-full {{ $dot }} shrink-0"></span>
             <span class="text-sm font-semibold">{{ $lbl }}</span>
           </label>
@@ -114,11 +119,9 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           @foreach([['pendaftaran_belum_teks','Teks "Belum"','Pendaftaran Belum Dibuka'],['pendaftaran_dibuka_teks','Teks "Dibuka"','Pendaftaran Resmi Dibuka'],['pendaftaran_ditutup_teks','Teks "Ditutup"','Pendaftaran Resmi Ditutup']] as [$key,$label,$ph])
           <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">{{ $label }}</label>
-            <input type="text" name="{{ $key }}" maxlength="200"
-                   value="{{ old($key, $settings[$key]) }}"
-                   placeholder="{{ $ph }}"
-                   class="w-full border border-gray-200 focus:border-blue-500 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+            <label class="block text-xs font-semibold text-gray-500 mb-1">{{ $label }}</label>
+            <input type="text" value="{{ $settings[$key] }}" placeholder="{{ $ph }}" disabled readonly
+                   class="w-full border border-gray-200 bg-gray-100 text-gray-400 rounded-xl px-3 py-2.5 text-xs cursor-not-allowed">
           </div>
           @endforeach
         </div>
@@ -314,6 +317,215 @@
         </label>
         @error('hero_bg_images')<p class="text-red-500 text-xs mt-2">{{ $message }}</p>@enderror
         @error('hero_bg_images.*')<p class="text-red-500 text-xs mt-2">{{ $message }}</p>@enderror
+      </div>
+
+      {{-- Hero Section per Kategori (Putra & Putri) --}}
+      <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 sm:p-6">
+        <h2 class="font-bold text-gray-900 text-sm mb-1.5 flex items-center gap-2">
+          <span class="w-6 h-6 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-xs">🚻</span>
+          Hero Halaman Kategori (Putra & Putri)
+        </h2>
+        <p class="text-[11px] text-gray-400 mb-4">
+          Tampil di header halaman <code>/lomba/putra</code> dan <code>/lomba/putri</code>. Jika gambar kosong, sistem memakai gradasi warna bawaan.
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+          {{-- Putra --}}
+          <div class="border border-blue-100 bg-blue-50/40 rounded-2xl p-4">
+            <p class="text-xs font-bold text-blue-700 mb-3 flex items-center gap-1.5">♂ Kategori Putra</p>
+
+            <div class="rounded-xl overflow-hidden relative mb-3 border border-blue-100"
+                 id="heroPutraPreviewWrap" style="background:{{ $settings['hero_putra_bg_color'] ?: '#1d4ed8' }}; min-height:70px;">
+              @if($settings['hero_putra_bg_image'])
+              <img src="{{ asset('storage/hero_bg/'.$settings['hero_putra_bg_image']) }}" id="heroPutraBgPreviewImg"
+                   class="absolute inset-0 w-full h-full object-cover"
+                   style="opacity:{{ (100 - ($settings['hero_putra_bg_overlay_opacity'] ?: 70)) / 100 }}">
+              @else
+              <img src="" id="heroPutraBgPreviewImg" class="absolute inset-0 w-full h-full object-cover hidden">
+              @endif
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 mb-3">
+              <div>
+                <label class="block text-[10px] font-semibold text-gray-600 mb-1">Warna</label>
+                <div class="flex items-center gap-1.5 border border-gray-200 rounded-lg px-2 py-1.5 bg-white">
+                  <input type="color" name="hero_putra_bg_color" id="heroPutraBgColor"
+                         value="{{ $settings['hero_putra_bg_color'] ?: '#1d4ed8' }}"
+                         class="w-6 h-6 rounded cursor-pointer border-0 p-0 bg-transparent">
+                  <span id="heroPutraBgColorText" class="text-[10px] text-gray-600 font-mono">{{ $settings['hero_putra_bg_color'] ?: '#1d4ed8' }}</span>
+                </div>
+              </div>
+              <div>
+                <label class="block text-[10px] font-semibold text-gray-600 mb-1">
+                  Opacity (<span id="heroPutraOpacityVal">{{ $settings['hero_putra_bg_overlay_opacity'] ?: 70 }}</span>%)
+                </label>
+                <input type="range" name="hero_putra_bg_overlay_opacity" id="heroPutraBgOpacity"
+                       min="0" max="100" value="{{ $settings['hero_putra_bg_overlay_opacity'] ?: 70 }}"
+                       class="w-full accent-blue-500">
+              </div>
+            </div>
+
+            <label class="flex items-center justify-center gap-2 border-2 border-dashed border-blue-200
+                   hover:border-blue-400 hover:bg-blue-50 rounded-xl p-3 cursor-pointer transition-all">
+              <input type="file" name="hero_putra_bg_image" id="heroPutraBgInput" accept=".jpg,.jpeg,.png,.webp" class="sr-only">
+              <span id="heroPutraBgFileName" class="text-[11px] text-blue-700 font-semibold">
+                {{ $settings['hero_putra_bg_image'] ? 'Ganti Gambar Hero Putra' : 'Upload Gambar Hero Putra' }}
+              </span>
+            </label>
+            @error('hero_putra_bg_image')<p class="text-red-500 text-[10px] mt-1">{{ $message }}</p>@enderror
+            @if($settings['hero_putra_bg_image'])
+            <label class="flex items-center gap-1.5 mt-2 cursor-pointer">
+              <input type="checkbox" name="remove_hero_putra_bg" value="1" id="removeHeroPutraBg" class="w-3.5 h-3.5 accent-red-500">
+              <span class="text-[11px] text-red-500 font-medium">Hapus gambar hero Putra</span>
+            </label>
+            @endif
+
+            <div class="border-t border-blue-100 mt-4 pt-4 space-y-3">
+              {{-- Logo Tahunan Putra --}}
+              <div>
+                <label class="block text-[10px] font-semibold text-gray-600 mb-1">Logo Tahunan / Event Putra</label>
+                <div class="flex items-center gap-2">
+                  <div class="w-11 h-11 rounded-lg border border-blue-200 bg-white flex items-center justify-center overflow-hidden shrink-0">
+                    @if($settings['logo_tahunan_putra'])
+                      <img src="{{ asset('storage/logos/'.$settings['logo_tahunan_putra']) }}" id="logoTahunanPutraPreview" class="w-full h-full object-contain p-1" alt="">
+                    @else
+                      <span id="logoTahunanPutraPreview" class="text-gray-300 text-xs">♂</span>
+                    @endif
+                  </div>
+                  <label class="flex-1 flex items-center justify-center gap-1.5 border-2 border-dashed border-blue-200 hover:border-blue-400 hover:bg-blue-50 rounded-lg px-2 py-2 cursor-pointer transition-all">
+                    <input type="file" name="logo_tahunan_putra" id="logoTahunanPutraInput" accept=".png,.jpg,.jpeg,.svg,.webp" class="sr-only">
+                    <span id="logoTahunanPutraFileName" class="text-[10px] text-blue-700 font-semibold truncate">Upload / Ganti Logo</span>
+                  </label>
+                </div>
+                @error('logo_tahunan_putra')<p class="text-red-500 text-[10px] mt-1">{{ $message }}</p>@enderror
+                @if($settings['logo_tahunan_putra'])
+                <label class="flex items-center gap-1.5 mt-1.5 cursor-pointer">
+                  <input type="checkbox" name="remove_logo_tahunan_putra" value="1" class="w-3.5 h-3.5 accent-red-500">
+                  <span class="text-[10px] text-red-500 font-medium">Hapus logo tahunan Putra</span>
+                </label>
+                @endif
+              </div>
+
+              {{-- Tagline Tahunan Putra --}}
+              <div>
+                <label class="block text-[10px] font-semibold text-gray-600 mb-1">Tagline Tahunan / Event Putra</label>
+                <input type="text" name="tagline_tahunan_putra" maxlength="200"
+                       value="{{ $settings['tagline_tahunan_putra'] }}"
+                       placeholder="cth: Semangat Juara, Torehkan Prestasi!"
+                       class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-200">
+                @error('tagline_tahunan_putra')<p class="text-red-500 text-[10px] mt-1">{{ $message }}</p>@enderror
+              </div>
+
+              {{-- Countdown Putra --}}
+              <div>
+                <label class="block text-[10px] font-semibold text-gray-600 mb-1">Batas Waktu Pendaftaran (Countdown) Putra</label>
+                <input type="datetime-local" name="countdown_putra"
+                       value="{{ $settings['countdown_putra'] ? \Illuminate\Support\Carbon::parse($settings['countdown_putra'])->format('Y-m-d\TH:i') : '' }}"
+                       class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-200">
+                @error('countdown_putra')<p class="text-red-500 text-[10px] mt-1">{{ $message }}</p>@enderror
+              </div>
+            </div>
+          </div>
+
+          {{-- Putri --}}
+          <div class="border border-pink-100 bg-pink-50/40 rounded-2xl p-4">
+            <p class="text-xs font-bold text-pink-700 mb-3 flex items-center gap-1.5">♀ Kategori Putri</p>
+
+            <div class="rounded-xl overflow-hidden relative mb-3 border border-pink-100"
+                 id="heroPutriPreviewWrap" style="background:{{ $settings['hero_putri_bg_color'] ?: '#db2777' }}; min-height:70px;">
+              @if($settings['hero_putri_bg_image'])
+              <img src="{{ asset('storage/hero_bg/'.$settings['hero_putri_bg_image']) }}" id="heroPutriBgPreviewImg"
+                   class="absolute inset-0 w-full h-full object-cover"
+                   style="opacity:{{ (100 - ($settings['hero_putri_bg_overlay_opacity'] ?: 70)) / 100 }}">
+              @else
+              <img src="" id="heroPutriBgPreviewImg" class="absolute inset-0 w-full h-full object-cover hidden">
+              @endif
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 mb-3">
+              <div>
+                <label class="block text-[10px] font-semibold text-gray-600 mb-1">Warna</label>
+                <div class="flex items-center gap-1.5 border border-gray-200 rounded-lg px-2 py-1.5 bg-white">
+                  <input type="color" name="hero_putri_bg_color" id="heroPutriBgColor"
+                         value="{{ $settings['hero_putri_bg_color'] ?: '#db2777' }}"
+                         class="w-6 h-6 rounded cursor-pointer border-0 p-0 bg-transparent">
+                  <span id="heroPutriBgColorText" class="text-[10px] text-gray-600 font-mono">{{ $settings['hero_putri_bg_color'] ?: '#db2777' }}</span>
+                </div>
+              </div>
+              <div>
+                <label class="block text-[10px] font-semibold text-gray-600 mb-1">
+                  Opacity (<span id="heroPutriOpacityVal">{{ $settings['hero_putri_bg_overlay_opacity'] ?: 70 }}</span>%)
+                </label>
+                <input type="range" name="hero_putri_bg_overlay_opacity" id="heroPutriBgOpacity"
+                       min="0" max="100" value="{{ $settings['hero_putri_bg_overlay_opacity'] ?: 70 }}"
+                       class="w-full accent-pink-500">
+              </div>
+            </div>
+
+            <label class="flex items-center justify-center gap-2 border-2 border-dashed border-pink-200
+                   hover:border-pink-400 hover:bg-pink-50 rounded-xl p-3 cursor-pointer transition-all">
+              <input type="file" name="hero_putri_bg_image" id="heroPutriBgInput" accept=".jpg,.jpeg,.png,.webp" class="sr-only">
+              <span id="heroPutriBgFileName" class="text-[11px] text-pink-700 font-semibold">
+                {{ $settings['hero_putri_bg_image'] ? 'Ganti Gambar Hero Putri' : 'Upload Gambar Hero Putri' }}
+              </span>
+            </label>
+            @error('hero_putri_bg_image')<p class="text-red-500 text-[10px] mt-1">{{ $message }}</p>@enderror
+            @if($settings['hero_putri_bg_image'])
+            <label class="flex items-center gap-1.5 mt-2 cursor-pointer">
+              <input type="checkbox" name="remove_hero_putri_bg" value="1" id="removeHeroPutriBg" class="w-3.5 h-3.5 accent-red-500">
+              <span class="text-[11px] text-red-500 font-medium">Hapus gambar hero Putri</span>
+            </label>
+            @endif
+
+            <div class="border-t border-pink-100 mt-4 pt-4 space-y-3">
+              {{-- Logo Tahunan Putri --}}
+              <div>
+                <label class="block text-[10px] font-semibold text-gray-600 mb-1">Logo Tahunan / Event Putri</label>
+                <div class="flex items-center gap-2">
+                  <div class="w-11 h-11 rounded-lg border border-pink-200 bg-white flex items-center justify-center overflow-hidden shrink-0">
+                    @if($settings['logo_tahunan_putri'])
+                      <img src="{{ asset('storage/logos/'.$settings['logo_tahunan_putri']) }}" id="logoTahunanPutriPreview" class="w-full h-full object-contain p-1" alt="">
+                    @else
+                      <span id="logoTahunanPutriPreview" class="text-gray-300 text-xs">♀</span>
+                    @endif
+                  </div>
+                  <label class="flex-1 flex items-center justify-center gap-1.5 border-2 border-dashed border-pink-200 hover:border-pink-400 hover:bg-pink-50 rounded-lg px-2 py-2 cursor-pointer transition-all">
+                    <input type="file" name="logo_tahunan_putri" id="logoTahunanPutriInput" accept=".png,.jpg,.jpeg,.svg,.webp" class="sr-only">
+                    <span id="logoTahunanPutriFileName" class="text-[10px] text-pink-700 font-semibold truncate">Upload / Ganti Logo</span>
+                  </label>
+                </div>
+                @error('logo_tahunan_putri')<p class="text-red-500 text-[10px] mt-1">{{ $message }}</p>@enderror
+                @if($settings['logo_tahunan_putri'])
+                <label class="flex items-center gap-1.5 mt-1.5 cursor-pointer">
+                  <input type="checkbox" name="remove_logo_tahunan_putri" value="1" class="w-3.5 h-3.5 accent-red-500">
+                  <span class="text-[10px] text-red-500 font-medium">Hapus logo tahunan Putri</span>
+                </label>
+                @endif
+              </div>
+
+              {{-- Tagline Tahunan Putri --}}
+              <div>
+                <label class="block text-[10px] font-semibold text-gray-600 mb-1">Tagline Tahunan / Event Putri</label>
+                <input type="text" name="tagline_tahunan_putri" maxlength="200"
+                       value="{{ $settings['tagline_tahunan_putri'] }}"
+                       placeholder="cth: Anggun Berprestasi, Wujudkan Mimpi!"
+                       class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-pink-200">
+                @error('tagline_tahunan_putri')<p class="text-red-500 text-[10px] mt-1">{{ $message }}</p>@enderror
+              </div>
+
+              {{-- Countdown Putri --}}
+              <div>
+                <label class="block text-[10px] font-semibold text-gray-600 mb-1">Batas Waktu Pendaftaran (Countdown) Putri</label>
+                <input type="datetime-local" name="countdown_putri"
+                       value="{{ $settings['countdown_putri'] ? \Illuminate\Support\Carbon::parse($settings['countdown_putri'])->format('Y-m-d\TH:i') : '' }}"
+                       class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-pink-200">
+                @error('countdown_putri')<p class="text-red-500 text-[10px] mt-1">{{ $message }}</p>@enderror
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
 
       {{-- Countdown --}}
@@ -568,6 +780,67 @@ function updateHeroBgOpacity(){
 }
 heroBgOpacityEl.addEventListener('input',updateHeroBgOpacity);
 
+// Hero Section per Kategori (Putra & Putri) — color, opacity & file preview
+function setupKategoriHeroPicker(prefix) {
+  const colorEl   = document.getElementById(`hero${prefix}BgColor`);
+  const colorText = document.getElementById(`hero${prefix}BgColorText`);
+  const opacityEl = document.getElementById(`hero${prefix}BgOpacity`);
+  const opacityVal= document.getElementById(`hero${prefix}OpacityVal`);
+  const wrap      = document.getElementById(`hero${prefix}PreviewWrap`);
+  const bgImg     = document.getElementById(`hero${prefix}BgPreviewImg`);
+  const fileInput = document.getElementById(`hero${prefix}BgInput`);
+  const fileName  = document.getElementById(`hero${prefix}BgFileName`);
+  if (!colorEl || !opacityEl) return;
+
+  colorEl.addEventListener('input', function () {
+    if (wrap) wrap.style.background = this.value;
+    if (colorText) colorText.textContent = this.value;
+  });
+
+  opacityEl.addEventListener('input', function () {
+    const v = parseInt(this.value);
+    if (opacityVal) opacityVal.textContent = v;
+    if (bgImg && bgImg.src) bgImg.style.opacity = (100 - v) / 100;
+  });
+
+  if (fileInput) {
+    fileInput.addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) { alert('Ukuran gambar maksimal 5MB!'); this.value = ''; return; }
+      const r = new FileReader();
+      r.onload = e => {
+        if (bgImg) { bgImg.src = e.target.result; bgImg.classList.remove('hidden'); bgImg.style.opacity = (100 - parseInt(opacityEl.value)) / 100; }
+        if (fileName) fileName.textContent = `✓ ${file.name} dipilih`;
+      };
+      r.readAsDataURL(file);
+    });
+  }
+}
+setupKategoriHeroPicker('Putra');
+setupKategoriHeroPicker('Putri');
+
+// Logo Tahunan per Kategori (Putra & Putri) — preview file terpilih
+function setupLogoTahunanPicker(prefix) {
+  const input    = document.getElementById(`logoTahunan${prefix}Input`);
+  const preview  = document.getElementById(`logoTahunan${prefix}Preview`);
+  const fileName = document.getElementById(`logoTahunan${prefix}FileName`);
+  if (!input) return;
+  input.addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { alert('Ukuran logo maksimal 2MB!'); this.value = ''; return; }
+    const r = new FileReader();
+    r.onload = e => {
+      if (preview) preview.outerHTML = `<img src="${e.target.result}" id="logoTahunan${prefix}Preview" class="w-full h-full object-contain p-1" alt="">`;
+      if (fileName) fileName.textContent = `✓ ${file.name}`;
+    };
+    r.readAsDataURL(file);
+  });
+}
+setupLogoTahunanPicker('Putra');
+setupLogoTahunanPicker('Putri');
+
 // Remove logo header
 const rm=document.getElementById('removeLogo');
 if(rm) rm.addEventListener('change',function(){
@@ -587,13 +860,8 @@ if(rmHero) rmHero.addEventListener('change',function(){
   if(el2) el2.innerHTML=msg;
 });
 
-// Status pendaftaran radio styling
-document.querySelectorAll('input[name="pendaftaran_status"]').forEach(radio=>{
-  radio.addEventListener('change',function(){
-    document.querySelectorAll('label[for^="status_"], .status-radio-label').forEach(l=>l.classList.remove('ring-2'));
-    this.closest('label')?.classList.add('ring-2');
-  });
-});
+// Status pendaftaran radio styling — dihapus: section ini sudah dinonaktifkan
+// (lihat card "Status Pendaftaran" di atas), tidak ada lagi input yang bisa diklik.
 
 // Submit loading
 document.getElementById('settingsForm').addEventListener('submit',function(){

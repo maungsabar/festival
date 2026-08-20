@@ -6,6 +6,9 @@ use App\Models\Lomba;
 use App\Models\Pendaftar;
 use App\Models\AnggotaTim;
 use App\Models\Sponsor;
+use App\Models\Setting;
+use App\Models\Rekening;
+use App\Models\Merchandise;
 
 class PublicController extends Controller
 {
@@ -17,16 +20,151 @@ class PublicController extends Controller
         return view('public.index', compact('lombas','pemenang','sponsors'));
     }
 
-    public function showForm()
+    public function kategori(string $gender)
     {
-        $status = \App\Models\Setting::get('pendaftaran_status', 'dibuka');
+        $genderLabel = $gender === 'putra' ? 'Putra' : 'Putri';
+
+        $lombas = Lomba::withCount('pendaftars')
+            ->where('gender', $genderLabel)
+            ->where('aktif', 1)
+            ->orderBy('nama_lomba')
+            ->get();
+
+        $pemenang = Lomba::where('gender', $genderLabel)
+            ->where('tampil_pemenang', true)
+            ->whereNotNull('pemenang')
+            ->get();
+
+        // PENTING soal penamaan variabel: AppServiceProvider::View::composer('*', ...)
+        // sudah membagikan $heroBgImage / $heroBgColor / $heroBgOverlayOpacity /
+        // $pendaftaranStatus ke SEMUA view (termasuk halaman ini) dari setting scope
+        // Global — dan composer itu jalan SETELAH data controller di-set, jadi kalau
+        // nama variabel di sini sama persis, nilai gender-scoped di bawah ini akan
+        // DIAM-DIAM TERTIMPA balik oleh nilai Global (inilah penyebab bug gambar hero
+        // Putri sebelumnya selalu menampilkan gambar landing page, bukan punya Putri).
+        // Solusinya: semua variabel gender-scoped WAJIB pakai nama berbeda + akhiran
+        // "Gender", sama seperti pola $logoTahunan/$taglineTahunan/$countdownGender.
+        $heroBgImageGender          = Setting::get('hero_bg_image', null, $genderLabel);
+        $heroBgColorGender          = Setting::get('hero_bg_color', $genderLabel === 'Putra' ? '#1d4ed8' : '#db2777', $genderLabel);
+        $heroBgOverlayOpacityGender = Setting::get('hero_bg_overlay_opacity', '70', $genderLabel);
+        $pendaftaranStatusGender    = Setting::get('status_pendaftaran', 'dibuka', $genderLabel);
+
+        // Teks pendukung status pendaftaran (diatur admin_putra/putri di halaman
+        // Pengaturan Kategori) — dipakai sebagai label tombol saat status bukan 'dibuka'.
+        $teksStatusGender = match ($pendaftaranStatusGender) {
+            'belum'   => Setting::get('teks_belum', 'Pendaftaran Belum Dibuka', $genderLabel),
+            'ditutup' => Setting::get('teks_ditutup', 'Pendaftaran Resmi Ditutup', $genderLabel),
+            default   => Setting::get('teks_dibuka', 'Pendaftaran Resmi Dibuka', $genderLabel),
+        };
+
+        $logoTahunan     = Setting::get('logo_tahunan', null, $genderLabel);
+        $judulHero       = Setting::get('judul_hero', null, $genderLabel);
+        $taglineTahunan  = Setting::get('tagline_tahunan', null, $genderLabel);
+        $countdownGender = Setting::get('countdown', null, $genderLabel);
+
+        // Sponsor bersifat festival-wide (bukan gender-scoped, lihat SponsorController),
+        // jadi cukup query yang sama seperti index().
+        $sponsors = Sponsor::where('aktif', 1)->orderBy('nama')->get();
+
+        // Kontak WhatsApp KHUSUS kategori ini (diatur admin_putra/admin_putri di
+        // halaman Pengaturan Kategori) — berbeda dari $contactPhone/$contactWhatsapp/
+        // $contactEmail yang global lewat View::composer.
+        $contactWaGender1     = Setting::get('contact_whatsapp_1', null, $genderLabel);
+        $contactWaGender1Nama = Setting::get('contact_whatsapp_1_nama', 'HUMAS', $genderLabel);
+        $contactWaGender2     = Setting::get('contact_whatsapp_2', null, $genderLabel);
+        $contactWaGender2Nama = Setting::get('contact_whatsapp_2_nama', 'BENDAHARA', $genderLabel);
+
+        // Media sosial KHUSUS kategori ini (diatur admin_putra/admin_putri) — beda
+        // dari $socialInstagram/$socialTiktok/dst yang global lewat View::composer,
+        // ditampilkan di footer halaman kategori (lihat public/kategori.blade.php).
+        $socialInstagramGender = Setting::get('social_instagram', null, $genderLabel);
+        $socialTiktokGender    = Setting::get('social_tiktok', null, $genderLabel);
+        $socialYoutubeGender   = Setting::get('social_youtube', null, $genderLabel);
+        $socialFacebookGender  = Setting::get('social_facebook', null, $genderLabel);
+
+        // Menu "Merchandise" di navbar cuma muncul kalau kategori ini punya
+        // merchandise aktif — cukup exists(), tidak perlu ambil datanya di sini.
+        $hasMerchandiseGender = Merchandise::where('gender', $genderLabel)->where('aktif', true)->exists();
+
+        return view('public.kategori', compact(
+            'lombas', 'pemenang', 'genderLabel', 'sponsors',
+            'heroBgImageGender', 'heroBgColorGender', 'heroBgOverlayOpacityGender', 'pendaftaranStatusGender', 'teksStatusGender',
+            'socialInstagramGender', 'socialTiktokGender', 'socialYoutubeGender', 'socialFacebookGender',
+            'logoTahunan', 'judulHero', 'taglineTahunan', 'countdownGender',
+            'contactWaGender1', 'contactWaGender1Nama', 'contactWaGender2', 'contactWaGender2Nama',
+            'hasMerchandiseGender'
+        ));
+    }
+
+    public function merchandise(string $gender)
+    {
+        $genderLabel = $gender === 'putra' ? 'Putra' : 'Putri';
+
+        $merchandises = Merchandise::where('gender', $genderLabel)
+            ->where('aktif', true)
+            ->orderBy('nama')
+            ->get();
+
+        // Kontak WhatsApp + media sosial KHUSUS kategori ini — dipakai untuk tombol
+        // "Pesan via WhatsApp" dan footer (footer-nya reuse markup yang sama persis
+        // dengan public/kategori.blade.php, jadi butuh variabel yang sama juga).
+        $contactWaGender1      = Setting::get('contact_whatsapp_1', null, $genderLabel);
+        $socialInstagramGender = Setting::get('social_instagram', null, $genderLabel);
+        $socialTiktokGender    = Setting::get('social_tiktok', null, $genderLabel);
+        $socialYoutubeGender   = Setting::get('social_youtube', null, $genderLabel);
+        $socialFacebookGender  = Setting::get('social_facebook', null, $genderLabel);
+
+        return view('public.merchandise', compact(
+            'merchandises', 'genderLabel', 'contactWaGender1',
+            'socialInstagramGender', 'socialTiktokGender', 'socialYoutubeGender', 'socialFacebookGender'
+        ));
+    }
+
+    public function showForm(Request $request)
+    {
+        // Form pendaftaran WAJIB diakses lewat halaman kategori (?gender=putra|putri) —
+        // gender lalu dikunci di form, tidak lagi dipilih manual oleh pendaftar, karena
+        // tanggal buka/tutup Putra & Putri bisa berbeda (diatur admin_putra/admin_putri).
+        $gender = strtolower((string) $request->query('gender'));
+        if (!in_array($gender, ['putra', 'putri'], true)) {
+            return redirect()->route('home')->with('warning', 'Silakan pilih kategori Putra atau Putri terlebih dahulu.');
+        }
+        $genderLabel = ucfirst($gender);
+
+        $status = \App\Models\Setting::get('status_pendaftaran', 'dibuka', $genderLabel);
         if ($status !== 'dibuka') {
             $msg = $status === 'ditutup'
-                ? \App\Models\Setting::get('pendaftaran_ditutup_teks', 'Pendaftaran Resmi Ditutup')
-                : \App\Models\Setting::get('pendaftaran_belum_teks', 'Pendaftaran Belum Dibuka');
-            return redirect()->route('home')->with('warning', $msg);
+                ? \App\Models\Setting::get('teks_ditutup', 'Pendaftaran Resmi Ditutup', $genderLabel)
+                : \App\Models\Setting::get('teks_belum', 'Pendaftaran Belum Dibuka', $genderLabel);
+            return redirect()->route('lomba.kategori', $gender)
+                ->with('warning', 'Pendaftaran kategori ' . $genderLabel . ': ' . $msg);
         }
-        return view('public.daftar');
+
+        // Rekening pembayaran Putra & Putri dikirim sekaligus (dataset kecil) dan
+        // ditoggle sisi klien begitu pendaftar memilih gender — lihat public/daftar.blade.php.
+        // Filtering per-kategori aslinya terjadi di admin (PembayaranController), di sini
+        // publik hanya menerima rekening yang aktif. groupBy (bukan keyBy) karena satu
+        // kategori bisa punya lebih dari satu rekening (mis. 2 pilihan bank).
+        $rekenings = Rekening::where('aktif', true)->orderBy('nama_bank')->get()->groupBy('gender');
+
+        // Kalau datang dari tombol "Daftar" di card lomba (?lomba=ID), kunci nama lomba +
+        // jenjangnya di form — pendaftar tidak perlu memilih lagi dari daftar. Divalidasi
+        // ulang di sini (gender cocok, aktif, belum penuh) meski kartu sumbernya sudah
+        // memfilter, supaya URL yang diutak-atik manual tidak bisa mengunci lomba yang
+        // sebetulnya tidak valid untuk kategori ini.
+        $lockedLomba = null;
+        if ($request->filled('lomba')) {
+            $candidate = Lomba::withCount('pendaftars')
+                ->where('id', $request->query('lomba'))
+                ->where('gender', $genderLabel)
+                ->where('aktif', 1)
+                ->first();
+            if ($candidate && !$candidate->isFull()) {
+                $lockedLomba = $candidate;
+            }
+        }
+
+        return view('public.daftar', compact('rekenings', 'genderLabel', 'lockedLomba'));
     }
 
     public function getLomba(Request $request)
@@ -52,9 +190,16 @@ class PublicController extends Controller
 
     public function store(Request $request)
     {
-        $status = \App\Models\Setting::get('pendaftaran_status', 'dibuka');
+        // SECURITY: validasi status berdasarkan gender yang BENAR-BENAR disubmit (bukan status
+        // global, dan bukan cuma percaya field "gender" terkunci di UI — field hidden tetap
+        // bisa dimanipulasi lewat request langsung), supaya kategori yang belum/sudah ditutup
+        // tidak bisa ditembus meski form berhasil dibuka sebelumnya.
+        $submittedGender = in_array($request->input('gender'), ['Putra', 'Putri'], true) ? $request->input('gender') : null;
+        $status = $submittedGender
+            ? \App\Models\Setting::get('status_pendaftaran', 'dibuka', $submittedGender)
+            : 'ditutup';
         if ($status !== 'dibuka') {
-            return back()->withErrors(['id_lomba' => 'Pendaftaran saat ini sedang tidak dibuka.'])->withInput();
+            return back()->withErrors(['id_lomba' => 'Pendaftaran kategori ' . ($submittedGender ?? '') . ' saat ini sedang tidak dibuka.'])->withInput();
         }
 
         $lomba  = $request->id_lomba ? Lomba::find($request->id_lomba) : null;

@@ -105,7 +105,8 @@
 {{-- ── Charts Row ── --}}
 <div class="grid grid-cols-1 xl:grid-cols-5 gap-4 mb-6">
 
-    {{-- Donut: Komposisi --}}
+    {{-- Donut: Komposisi — SECURITY: perbandingan Putra vs Putri cuma boleh dilihat superadmin --}}
+    @if($role === 'superadmin')
     <div class="xl:col-span-2 bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
         <div class="flex items-center justify-between mb-4">
             <div>
@@ -129,9 +130,10 @@
             <p class="text-xs text-gray-400">Total Peserta</p>
         </div>
     </div>
+    @endif
 
     {{-- Bar: Per Lomba --}}
-    <div class="xl:col-span-3 bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+    <div class="{{ $role === 'superadmin' ? 'xl:col-span-3' : 'xl:col-span-5' }} bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
         <div class="flex items-center justify-between mb-4">
             <div>
                 <h2 class="font-bold text-gray-900 text-sm">Peserta per Lomba</h2>
@@ -269,8 +271,8 @@
 
 <script>
 window._dashData = {
-    totalPutra: {{ $totalPutra }},
-    totalPutri: {{ $totalPutri }},
+    totalPutra: {{ $totalPutra ?? 0 }},
+    totalPutri: {{ $totalPutri ?? 0 }},
     belum: {{ $belum }},
     terverif: {{ $terverif }},
     ditolak: {{ $ditolak }},
@@ -322,21 +324,24 @@ Chart.defaults.color       = '#6b7280';
 const d = window._dashData;
 const total = d.totalPutra + d.totalPutri || 1;
 
-// Donut: Komposisi
-new Chart(document.getElementById('donutChart'), {
-    type: 'doughnut',
-    data: {
-        labels: ['Putra','Putri'],
-        datasets: [{ data:[d.totalPutra,d.totalPutri],
-            backgroundColor:['#3b82f6','#ec4899'],
-            borderColor:'#fff', borderWidth:3, hoverOffset:6 }]
-    },
-    options: {
-        responsive:true, maintainAspectRatio:false, cutout:'72%',
-        plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed}`}} },
-        animation:{ animateRotate:true, duration:900, easing:'easeOutQuart' }
-    }
-});
+// Donut: Komposisi (elemen ini hanya dirender untuk role superadmin)
+const donutEl = document.getElementById('donutChart');
+if (donutEl) {
+    new Chart(donutEl, {
+        type: 'doughnut',
+        data: {
+            labels: ['Putra','Putri'],
+            datasets: [{ data:[d.totalPutra,d.totalPutri],
+                backgroundColor:['#3b82f6','#ec4899'],
+                borderColor:'#fff', borderWidth:3, hoverOffset:6 }]
+        },
+        options: {
+            responsive:true, maintainAspectRatio:false, cutout:'72%',
+            plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed}`}} },
+            animation:{ animateRotate:true, duration:900, easing:'easeOutQuart' }
+        }
+    });
+}
 
 // Bar: Per Lomba
 new Chart(document.getElementById('barChart'), {

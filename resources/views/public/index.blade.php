@@ -25,24 +25,15 @@
                 d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
         </svg>Login Admin
       </a> -->
-      @if($pendaftaranStatus === 'dibuka')
-      <a href="{{ route('daftar.form') }}" id="nav-cta"
+      {{-- Status pendaftaran sekarang per-kategori (Putra/Putri), jadi tombol ini
+           mengarahkan ke pemilihan kategori dulu — bukan lagi form langsung. --}}
+      <a href="#lomba" id="nav-cta"
          class="inline-flex items-center gap-1.5 text-sm font-bold px-4 py-2.5 rounded-xl transition-all active:scale-95 bg-white text-blue-700 hover:bg-blue-50 shadow-sm">
         Daftar Sekarang
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
         </svg>
       </a>
-      @else
-      <button disabled
-              class="inline-flex items-center gap-1.5 text-sm font-bold px-4 py-2.5 rounded-xl bg-gray-200/80 text-gray-400 cursor-not-allowed opacity-80"
-              title="Pendaftaran {{ $pendaftaranStatus === 'ditutup' ? 'Sudah Ditutup' : 'Belum Dibuka' }}">
-        Daftar Sekarang
-        <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-        </svg>
-      </button>
-      @endif
     </div>
   </div>
 </nav>
@@ -76,22 +67,6 @@
 
   <div class="relative max-w-3xl mx-auto px-4 sm:px-6 py-16 text-center w-full">
 
-    {{-- Countdown Timer --}}
-    @if($countdownDate)
-    <div class="mb-8 animate-slide-up" style="animation-delay:.05s">
-      <p class="text-blue-300 text-xs font-semibold uppercase tracking-widest mb-3">Pendaftaran Ditutup Dalam</p>
-      <div id="countdown" class="flex items-center justify-center gap-3">
-        @foreach([['days','Hari'],['hours','Jam'],['minutes','Menit'],['seconds','Detik']] as [$key,$lbl])
-        <div class="bg-white/10 border border-white/20 backdrop-blur rounded-2xl px-3 sm:px-5 py-3 text-center min-w-[64px] sm:min-w-[80px]">
-          <div id="cd-{{ $key }}" class="text-2xl sm:text-3xl font-black text-white tabular-nums">00</div>
-          <div class="text-blue-300/70 text-[10px] font-semibold uppercase tracking-wider mt-0.5">{{ $lbl }}</div>
-        </div>
-        @if(!$loop->last)<div class="text-white/40 text-2xl font-black">:</div>@endif
-        @endforeach
-      </div>
-    </div>
-    @endif
-
     {{-- Logo Hero --}}
     @php
       $heroLogo = $festivalLogoHero ?: $festivalLogo;
@@ -101,20 +76,6 @@
       <img src="{{ asset('storage/logos/'.$heroLogo) }}" class="w-full h-full object-contain" alt="">
     </div>
     @endif
-
-    <div class="inline-flex items-center gap-2 border text-xs font-semibold px-4 py-1.5 rounded-full mb-6 animate-slide-up
-                @if($pendaftaranStatus === 'dibuka') bg-emerald-500/20 border-emerald-400/30 text-emerald-300
-                @elseif($pendaftaranStatus === 'ditutup') bg-red-500/20 border-red-400/30 text-red-300
-                @else bg-gray-500/20 border-gray-400/30 text-gray-300 @endif"
-         style="animation-delay:.12s">
-      <span class="w-1.5 h-1.5 rounded-full animate-pulse
-                   @if($pendaftaranStatus === 'dibuka') bg-emerald-400
-                   @elseif($pendaftaranStatus === 'ditutup') bg-red-400
-                   @else bg-gray-400 @endif"></span>
-      @if($pendaftaranStatus === 'dibuka') {{ $pendaftaranDibukaTeks }} — {{ $festivalYear }}
-      @elseif($pendaftaranStatus === 'ditutup') {{ $pendaftaranDitutupTeks }}
-      @else {{ $pendaftaranBelumTeks }} @endif
-    </div>
 
     <h1 class="text-4xl sm:text-5xl md:text-6xl font-black text-white leading-[1.1] mb-4 animate-slide-up" style="animation-delay:.15s">
       {{ $festivalName }}
@@ -128,44 +89,8 @@
     </p>
     @endif
 
-    <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mb-14 animate-slide-up" style="animation-delay:.27s">
-      @if($pendaftaranStatus === 'dibuka')
-      <a href="{{ route('daftar.form') }}"
-         class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5
-                bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-300 hover:to-orange-300
-                text-gray-900 font-bold px-8 py-4 rounded-2xl text-base transition-all active:scale-95
-                shadow-xl shadow-orange-900/25 hover:-translate-y-0.5">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-        </svg>
-        Daftar Sekarang
-      </a>
-      @else
-      <button disabled
-              class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5
-                     bg-gray-700/60 border border-gray-600/60 text-gray-400 font-bold px-8 py-4 rounded-2xl text-base cursor-not-allowed opacity-80"
-              title="Pendaftaran {{ $pendaftaranStatus === 'ditutup' ? 'Sudah Ditutup' : 'Belum Dibuka' }}">
-        <svg class="w-5 h-5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
-        </svg>
-        Pendaftaran {{ $pendaftaranStatus === 'ditutup' ? 'Ditutup' : 'Belum Dibuka' }}
-      </button>
-      @endif
-      <a href="#lomba"
-         class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5
-                bg-white/10 hover:bg-white/20 border border-white/20
-                text-white font-semibold px-8 py-4 rounded-2xl text-base transition-all active:scale-95">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-        </svg>
-        Info Lomba
-      </a>
-    </div>
-
     <div class="grid grid-cols-3 gap-3 sm:gap-4 max-w-sm sm:max-w-md mx-auto animate-slide-up" style="animation-delay:.32s">
-      @foreach([[$lombas->count().'','Kategori Lomba','from-blue-500/20 to-blue-600/20 border-blue-500/20'],['2','Divisi','from-pink-500/20 to-pink-600/20 border-pink-500/20'],['🎖️','Hadiah','from-amber-500/20 to-orange-500/20 border-amber-500/20']] as [$v,$l,$g])
+      @foreach([[$lombas->count().'','Cabang Lomba','from-blue-500/20 to-blue-600/20 border-blue-500/20'],['2','Divisi','from-pink-500/20 to-pink-600/20 border-pink-500/20'],['🎖️','Hadiah','from-amber-500/20 to-orange-500/20 border-amber-500/20']] as [$v,$l,$g])
       <div class="bg-gradient-to-br {{ $g }} border backdrop-blur-sm rounded-2xl p-3 sm:p-4 text-center">
         <div class="text-xl sm:text-2xl font-black text-white">{{ $v }}</div>
         <div class="text-blue-200/70 text-[11px] sm:text-xs mt-0.5">{{ $l }}</div>
@@ -222,116 +147,44 @@
       <div class="inline-flex items-center gap-2 bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
         🏅 Kategori Lomba {{ $festivalYear }}
       </div>
-      <h2 class="text-3xl sm:text-4xl font-black text-gray-900 mb-3">Pilih Lombamu</h2>
-      <p class="text-gray-500 text-sm">Tersedia berbagai kategori untuk putra dan putri.</p>
+      <h2 class="text-3xl sm:text-4xl font-black text-gray-900 mb-3">Pilih Kategori Lomba</h2>
+      <p class="text-gray-500 text-sm">Pilih kategori sesuai jenis kelamin peserta untuk melihat cabang lomba yang tersedia.</p>
     </div>
 
-    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
-      @forelse($lombas as $l)
-      @php $full = $l->isFull(); $sisa = $l->sisaKuota(); @endphp
-      <div class="bg-white border {{ $full?'border-gray-200 opacity-70':'border-gray-100 hover:border-blue-200 hover:shadow-md' }}
-                  rounded-2xl p-5 transition-all duration-200 {{ $full?'':'hover:-translate-y-0.5' }}">
-        
-        {{-- Card Image / Placeholder --}}
-        <div class="w-full aspect-[2/3] rounded-xl overflow-hidden mb-4 border border-gray-100 flex items-center justify-center relative bg-gradient-to-br {{ $l->gender==='Putra'?'from-blue-500/10 to-indigo-500/10':'from-pink-500/10 to-rose-500/10' }}">
-          @if($l->gambar)
-            <img src="{{ asset('storage/lomba_images/' . $l->gambar) }}" class="w-full h-full object-cover">
-          @else
-            <span class="text-3xl opacity-40">{{ $l->gender==='Putra'?'🏆':'🎨' }}</span>
-          @endif
+    <div class="grid sm:grid-cols-2 gap-6 mb-10 max-w-3xl mx-auto">
+      {{-- Kategori Putra --}}
+      <a href="{{ route('lomba.kategori', 'putra') }}"
+         class="group relative overflow-hidden rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50
+                p-8 text-center transition-all duration-200 hover:shadow-xl hover:-translate-y-1 hover:border-blue-200">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-600 flex items-center justify-center text-3xl text-white shadow-lg shadow-blue-500/30">
+          ♂
         </div>
+        <h3 class="text-xl font-black text-gray-900 mb-1">Kategori Putra</h3>
+        <p class="text-sm text-gray-500 mb-5">{{ $lombas->where('gender','Putra')->count() }} cabang lomba tersedia</p>
+        <span class="inline-flex items-center gap-1.5 text-sm font-bold text-blue-700">
+          Lihat Lomba
+          <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </span>
+      </a>
 
-        <div class="flex items-start gap-3 mb-3">
-          <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 {{ $l->gender==='Putra'?'bg-blue-100':'bg-pink-100' }}">
-            {{ $l->gender==='Putra'?'♂':'♀' }}
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="font-bold text-gray-900 text-sm {{ $full?'line-through text-gray-400':'' }}">{{ $l->nama_lomba }}</p>
-            <div class="flex flex-wrap gap-1.5 mt-1">
-              <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full {{ $l->gender==='Putra'?'bg-blue-100 text-blue-700':'bg-pink-100 text-pink-700' }}">{{ $l->gender }}</span>
-              <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full 
-                @if($l->jenjang==='SMP') bg-teal-100 text-teal-700 
-                @elseif($l->jenjang==='SMA') bg-indigo-100 text-indigo-700 
-                @else bg-amber-100 text-amber-700 @endif">{{ $l->jenjang }}</span>
-              <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full {{ $l->tipe==='team'?'bg-violet-100 text-violet-700':'bg-gray-100 text-gray-600' }}">
-                {{ $l->tipe==='team'?'👥 Beregu':'👤 Perorangan' }}
-              </span>
-            </div>
-          </div>
-          @if($full)
-          <span class="text-[10px] font-semibold bg-red-100 text-red-600 px-2 py-0.5 rounded-full shrink-0">Penuh</span>
-          @endif
+      {{-- Kategori Putri --}}
+      <a href="{{ route('lomba.kategori', 'putri') }}"
+         class="group relative overflow-hidden rounded-3xl border border-pink-100 bg-gradient-to-br from-pink-50 to-rose-50
+                p-8 text-center transition-all duration-200 hover:shadow-xl hover:-translate-y-1 hover:border-pink-200">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-pink-500 flex items-center justify-center text-3xl text-white shadow-lg shadow-pink-500/30">
+          ♀
         </div>
-        @if($l->kuota)
-        <div class="mb-3">
-          <div class="flex justify-between text-[10px] text-gray-400 mb-1">
-            <span>Kuota</span>
-            <span>{{ $l->pendaftars_count }}/{{ $l->kuota }}</span>
-          </div>
-          <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div class="{{ $full?'bg-red-400':'bg-emerald-400' }} h-full rounded-full"
-                 style="width:{{ min(100,round($l->pendaftars_count/$l->kuota*100)) }}%"></div>
-          </div>
-        </div>
-        @endif
-
-        <div class="mt-3 flex gap-2">
-          @if($pendaftaranStatus !== 'dibuka')
-            <button disabled
-                    class="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold
-                           bg-gray-100 text-gray-400 py-2.5 rounded-xl cursor-not-allowed opacity-75">
-              Nonaktif
-            </button>
-          @elseif($full)
-            <button disabled
-                    class="flex-1 flex items-center justify-center text-xs font-semibold
-                           bg-red-50 text-red-500 py-2.5 rounded-xl cursor-not-allowed">
-              Kuota Penuh
-            </button>
-          @else
-            <a href="{{ route('daftar.form') }}"
-               class="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold
-                      bg-blue-50 hover:bg-blue-100 text-blue-700 py-2.5 rounded-xl transition-all">
-              Daftar
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-              </svg>
-            </a>
-          @endif
-
-          @if($l->file_guidebook)
-            <a href="{{ asset('storage/guidebooks/' . $l->file_guidebook) }}" target="_blank"
-               class="flex-1 flex items-center justify-center gap-1 text-xs font-semibold
-                      bg-gray-50 hover:bg-gray-100 text-gray-600 py-2.5 rounded-xl transition-all border border-gray-200">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-              </svg>
-              Guidebook
-            </a>
-          @endif
-        </div>
-      </div>
-      @empty
-      <div class="sm:col-span-2 lg:col-span-3 text-center py-10 text-gray-400">
-        <p>Belum ada lomba yang tersedia.</p>
-      </div>
-      @endforelse
-    </div>
-
-    {{-- Cara Mendaftar --}}
-    <div class="bg-gray-50 rounded-3xl border border-gray-100 p-8">
-      <h3 class="font-bold text-gray-900 text-center mb-8">Cara Mendaftar</h3>
-      <div class="grid sm:grid-cols-3 gap-6">
-        @foreach([['1','Isi Formulir','Lengkapi data diri, pilih lomba, dan isi data anggota tim jika beregu.','blue'],['2','Upload Dokumen','Siapkan kartu siswa, bukti pembayaran, dan link twibbon.','violet'],['3','Tunggu Verifikasi','Panitia memverifikasi berkas dan menghubungi via nomor yang didaftarkan.','emerald']] as [$n,$t,$d,$c])
-        <div class="text-center">
-          <div class="w-12 h-12 bg-{{ $c }}-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-            <span class="text-{{ $c }}-700 font-black text-lg">{{ $n }}</span>
-          </div>
-          <h4 class="font-bold text-gray-900 text-sm mb-2">{{ $t }}</h4>
-          <p class="text-gray-400 text-xs leading-relaxed">{{ $d }}</p>
-        </div>
-        @endforeach
-      </div>
+        <h3 class="text-xl font-black text-gray-900 mb-1">Kategori Putri</h3>
+        <p class="text-sm text-gray-500 mb-5">{{ $lombas->where('gender','Putri')->count() }} cabang lomba tersedia</p>
+        <span class="inline-flex items-center gap-1.5 text-sm font-bold text-pink-700">
+          Lihat Lomba
+          <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </span>
+      </a>
     </div>
 
     @if($sponsors->count() > 0)
@@ -544,8 +397,8 @@
   <div class="max-w-2xl mx-auto px-4 sm:px-6 text-center">
     <h2 class="text-2xl sm:text-3xl font-black text-white mb-2">Siap Bergabung?</h2>
     <p class="text-blue-200 text-sm mb-7">Daftarkan dirimu di {{ $festivalName }} {{ $festivalYear }} sebelum kuota penuh!</p>
-    @if($pendaftaranStatus === 'dibuka')
-    <a href="{{ route('daftar.form') }}"
+    {{-- Status pendaftaran sekarang per-kategori (Putra/Putri) — arahkan ke pemilihan kategori dulu. --}}
+    <a href="#lomba"
        class="inline-flex items-center gap-2.5 bg-white hover:bg-blue-50 text-blue-700
               font-bold px-8 py-4 rounded-2xl text-base transition-all active:scale-95 shadow-xl hover:-translate-y-0.5">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -553,17 +406,6 @@
               d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
       </svg>Mulai Pendaftaran
     </a>
-    @else
-    <button disabled
-            class="inline-flex items-center gap-2.5 bg-blue-900/60 border border-blue-400/30 text-blue-200/60
-                   font-bold px-8 py-4 rounded-2xl text-base cursor-not-allowed opacity-80 shadow-none"
-            title="Pendaftaran {{ $pendaftaranStatus === 'ditutup' ? 'Sudah Ditutup' : 'Belum Dibuka' }}">
-      <svg class="w-5 h-5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
-      </svg>Pendaftaran {{ $pendaftaranStatus === 'ditutup' ? 'Ditutup' : 'Belum Dibuka' }}
-    </button>
-    @endif
   </div>
 </section>
 
@@ -728,33 +570,6 @@ function toggleBackTop() {
 }
 window.addEventListener('scroll', toggleBackTop, {passive: true});
 toggleBackTop();
-
-@if($countdownDate)
-// Countdown Timer
-const deadline = new Date("{{ $countdownDate }}").getTime();
-function updateCountdown() {
-  const now  = Date.now();
-  const diff = deadline - now;
-  if (diff <= 0) {
-    ['days','hours','minutes','seconds'].forEach(k => {
-      const el = document.getElementById('cd-'+k);
-      if(el) el.textContent = '00';
-    });
-    return;
-  }
-  const days    = Math.floor(diff / 86400000);
-  const hours   = Math.floor((diff % 86400000) / 3600000);
-  const minutes = Math.floor((diff % 3600000) / 60000);
-  const seconds = Math.floor((diff % 60000) / 1000);
-  const pad = n => String(n).padStart(2,'0');
-  document.getElementById('cd-days').textContent    = pad(days);
-  document.getElementById('cd-hours').textContent   = pad(hours);
-  document.getElementById('cd-minutes').textContent = pad(minutes);
-  document.getElementById('cd-seconds').textContent = pad(seconds);
-}
-updateCountdown();
-setInterval(updateCountdown, 1000);
-@endif
 
 // Hero Background Carousel (Otomatis ganti slide tiap 5 detik)
 const heroBgSlides = document.querySelectorAll('.hero-bg-slide');

@@ -15,7 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         // Daftarkan alias middleware custom
         $middleware->alias([
-            'auth.admin' => \App\Http\Middleware\AdminAuth::class,
+            'auth.admin'    => \App\Http\Middleware\AdminAuth::class,
+            'gender.access' => \App\Http\Middleware\EnsureGenderAccess::class,
         ]);
 
         // SECURITY: Tambahkan Security Headers ke semua response

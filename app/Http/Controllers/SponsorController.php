@@ -7,9 +7,14 @@ use App\Models\Sponsor;
 
 class SponsorController extends Controller
 {
+    // Sponsor bersifat festival-wide (tidak terikat gender/lomba tertentu —
+    // lihat kolom tabel `sponsors`: nama, logo, link, aktif), jadi TIDAK ada
+    // filtering query berdasarkan gender di sini. admin_putra & admin_putri
+    // diberi akses kelola penuh yang sama seperti superadmin, cukup dengan
+    // membatasi role yang boleh login sebagai admin (di luar 3 role ini ditolak).
     private function checkAccess(): void
     {
-        if (session('admin_user.role') !== 'superadmin') {
+        if (!in_array(session('admin_user.role'), ['superadmin', 'admin_putra', 'admin_putri'], true)) {
             abort(403);
         }
     }

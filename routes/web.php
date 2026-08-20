@@ -9,6 +9,12 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
 
 Route::get('/',          [PublicController::class, 'index'])->name('home');
+Route::get('/lomba/{gender}', [PublicController::class, 'kategori'])
+     ->where('gender', 'putra|putri')
+     ->name('lomba.kategori');
+Route::get('/lomba/{gender}/merchandise', [PublicController::class, 'merchandise'])
+     ->where('gender', 'putra|putri')
+     ->name('merchandise.index');
 Route::get('/daftar',    [PublicController::class, 'showForm'])->name('daftar.form');
 Route::post('/daftar',   [PublicController::class, 'store'])->name('daftar.store');
 Route::get('/daftar/sukses', [PublicController::class, 'sukses'])->name('daftar.sukses');
@@ -19,7 +25,7 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.post')
      ->middleware('throttle:5,1'); // SECURITY: max 5 attempts per minute per IP
 Route::post('/logout',[AuthController::class, 'logout'])->name('logout');
 
-Route::middleware(['auth.admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth.admin', 'gender.access'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/pendaftar',                         [PendaftarController::class, 'index'])->name('pendaftar.index');
@@ -53,12 +59,28 @@ Route::middleware(['auth.admin'])->prefix('admin')->name('admin.')->group(functi
     Route::put('/users/{user}',      [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}',   [UserController::class, 'destroy'])->name('users.destroy');
 
-    // Sponsor (superadmin only; pengecekan akses ada di SponsorController)
+    // Sponsor (superadmin, admin_putra & admin_putri; pengecekan akses ada di SponsorController)
     Route::get('/sponsor',                 [\App\Http\Controllers\SponsorController::class, 'index'])->name('sponsor.index');
     Route::get('/sponsor/create',        [\App\Http\Controllers\SponsorController::class, 'create'])->name('sponsor.create');
     Route::post('/sponsor',              [\App\Http\Controllers\SponsorController::class, 'store'])->name('sponsor.store');
     Route::get('/sponsor/{sponsor}/edit',[\App\Http\Controllers\SponsorController::class, 'edit'])->name('sponsor.edit');
     Route::put('/sponsor/{sponsor}',     [\App\Http\Controllers\SponsorController::class, 'update'])->name('sponsor.update');
     Route::delete('/sponsor/{sponsor}',  [\App\Http\Controllers\SponsorController::class, 'destroy'])->name('sponsor.destroy');
+
+    // Kelola Pembayaran (rekening bank publik; ter-scope gender via gender.access middleware)
+    Route::get('/pembayaran',                  [\App\Http\Controllers\PembayaranController::class, 'index'])->name('pembayaran.index');
+    Route::get('/pembayaran/create',            [\App\Http\Controllers\PembayaranController::class, 'create'])->name('pembayaran.create');
+    Route::post('/pembayaran',                  [\App\Http\Controllers\PembayaranController::class, 'store'])->name('pembayaran.store');
+    Route::get('/pembayaran/{rekening}/edit',   [\App\Http\Controllers\PembayaranController::class, 'edit'])->name('pembayaran.edit');
+    Route::put('/pembayaran/{rekening}',        [\App\Http\Controllers\PembayaranController::class, 'update'])->name('pembayaran.update');
+    Route::delete('/pembayaran/{rekening}',     [\App\Http\Controllers\PembayaranController::class, 'destroy'])->name('pembayaran.destroy');
+
+    // Kelola Merchandise (ter-scope gender via gender.access middleware, sama pola Pembayaran)
+    Route::get('/merchandise',                    [\App\Http\Controllers\MerchandiseController::class, 'index'])->name('merchandise.index');
+    Route::get('/merchandise/create',             [\App\Http\Controllers\MerchandiseController::class, 'create'])->name('merchandise.create');
+    Route::post('/merchandise',                   [\App\Http\Controllers\MerchandiseController::class, 'store'])->name('merchandise.store');
+    Route::get('/merchandise/{merchandise}/edit', [\App\Http\Controllers\MerchandiseController::class, 'edit'])->name('merchandise.edit');
+    Route::put('/merchandise/{merchandise}',      [\App\Http\Controllers\MerchandiseController::class, 'update'])->name('merchandise.update');
+    Route::delete('/merchandise/{merchandise}',   [\App\Http\Controllers\MerchandiseController::class, 'destroy'])->name('merchandise.destroy');
 });
 

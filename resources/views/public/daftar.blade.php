@@ -2,6 +2,16 @@
 @section('title', 'Formulir Pendaftaran — ' . $festivalName)
 
 @section('content')
+@php
+  $isPutraForm = $genderLabel === 'Putra';
+  $formAccent  = $isPutraForm ? 'blue' : 'pink';
+  // Dihitung terpisah (bukan langsung di dalam @json() nanti) karena direktif @json()
+  // Blade salah mem-parsing ekspresi ternary yang berisi array literal ber-koma.
+  $lockedLombaJs = $lockedLomba ? [
+      'id' => $lockedLomba->id, 'tipe' => $lockedLomba->tipe,
+      'min_anggota' => $lockedLomba->min_anggota, 'max_anggota' => $lockedLomba->max_anggota,
+  ] : null;
+@endphp
 <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
 
   {{-- Navbar --}}
@@ -35,17 +45,11 @@
       @endif
       <h1 class="text-2xl sm:text-3xl font-black text-gray-900">Formulir Pendaftaran</h1>
       <p class="text-gray-500 text-sm mt-1">{{ $festivalName }} {{ $festivalYear }}</p>
+      <div class="inline-flex items-center gap-1.5 mt-3 text-xs font-bold px-3 py-1.5 rounded-full
+                 {{ $isPutraForm ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700' }}">
+        {{ $isPutraForm ? '♂' : '♀' }} Kategori {{ $genderLabel }}
+      </div>
     </div>
-
-    {{-- Global status warning --}}
-    @if($pendaftaranStatus !== 'dibuka')
-    <div class="flex items-center gap-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl p-4 mb-5 text-sm font-semibold">
-      <svg class="w-5 h-5 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-      </svg>
-      <span>Pendaftaran saat ini {{ $pendaftaranStatus === 'ditutup' ? 'resmi ditutup' : 'belum dibuka' }}. Formulir tidak dapat dikirim.</span>
-    </div>
-    @endif
 
     {{-- Error alert --}}
     @if($errors->any())
@@ -116,77 +120,29 @@
             @error('hp_peserta')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
           </div>
 
-          {{-- Gender --}}
+          {{-- Gender — terkunci sesuai halaman kategori asal, tidak bisa diubah manual --}}
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Jenis Kelamin <span class="text-red-500">*</span></label>
-            <div class="grid grid-cols-2 gap-2.5">
-              {{-- Putra Option --}}
-              <label class="relative flex items-center justify-between border rounded-xl px-4 py-3 cursor-pointer transition-all active:scale-[0.98] select-none
-                            has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/80 has-[:checked]:shadow-sm
-                            border-gray-200 hover:border-blue-300 hover:bg-blue-50/30">
-                <input type="radio" name="gender" value="Putra" class="sr-only peer" {{ old('gender')==='Putra'?'checked':'' }} required>
-                <div class="flex items-center gap-2">
-                  <div class="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 font-black text-sm flex items-center justify-center shrink-0">♂</div>
-                  <span class="font-semibold text-sm text-gray-800">Putra</span>
-                </div>
-                <div class="w-4 h-4 rounded-full border-2 border-gray-300 peer-checked:border-blue-600 peer-checked:bg-blue-600 flex items-center justify-center shrink-0 transition-all">
-                  <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
-                </div>
-              </label>
-
-              {{-- Putri Option --}}
-              <label class="relative flex items-center justify-between border rounded-xl px-4 py-3 cursor-pointer transition-all active:scale-[0.98] select-none
-                            has-[:checked]:border-pink-600 has-[:checked]:bg-pink-50/80 has-[:checked]:shadow-sm
-                            border-gray-200 hover:border-pink-300 hover:bg-pink-50/30">
-                <input type="radio" name="gender" value="Putri" class="sr-only peer" {{ old('gender')==='Putri'?'checked':'' }} required>
-                <div class="flex items-center gap-2">
-                  <div class="w-6 h-6 rounded-lg bg-pink-100 text-pink-700 font-black text-sm flex items-center justify-center shrink-0">♀</div>
-                  <span class="font-semibold text-sm text-gray-800">Putri</span>
-                </div>
-                <div class="w-4 h-4 rounded-full border-2 border-gray-300 peer-checked:border-pink-600 peer-checked:bg-pink-600 flex items-center justify-center shrink-0 transition-all">
-                  <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
-                </div>
-              </label>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Jenis Kelamin</label>
+            <input type="hidden" name="gender" value="{{ $genderLabel }}">
+            <div class="flex items-center gap-2.5 border-2 {{ $isPutraForm ? 'border-blue-200 bg-blue-50/60' : 'border-pink-200 bg-pink-50/60' }} rounded-xl px-4 py-3">
+              <div class="w-6 h-6 rounded-lg {{ $isPutraForm ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700' }} font-black text-sm flex items-center justify-center shrink-0">
+                {{ $isPutraForm ? '♂' : '♀' }}
+              </div>
+              <span class="font-semibold text-sm text-gray-800">{{ $genderLabel }}</span>
+              <span class="text-xs text-gray-400 ml-auto">Terkunci sesuai kategori</span>
             </div>
-            @error('gender')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
           {{-- Nama Sekolah --}}
-          <div class="sm:col-span-2">
+          <div class="sm:col-span-3">
             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nama Sekolah <span class="text-red-500">*</span></label>
             <input type="text" name="nama_sekolah" value="{{ old('nama_sekolah') }}"
                    class="w-full border {{ $errors->has('nama_sekolah')?'border-red-400 bg-red-50':'border-gray-200 focus:border-blue-500' }}
                           rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                    placeholder="Contoh: MA MILBoS Bogor" required>
             @error('nama_sekolah')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
-          </div>
-
-          {{-- Filter Jenjang Lomba --}}
-          <div class="sm:col-span-1">
-            <label class="block text-sm font-semibold text-gray-700 mb-1.5 flex items-center justify-between">
-              <span>Filter Jenjang Lomba</span>
-              <span class="text-[10px] text-blue-600 font-bold" id="jenjang-label-badge">SEMUA</span>
-            </label>
-            <div class="flex items-center gap-1 bg-gray-100 p-1 rounded-xl border border-gray-200">
-              <button type="button" onclick="setJenjangFilter('SEMUA')" id="filter-btn-SEMUA"
-                      class="filter-jenjang-btn flex-1 text-center py-2 px-1 text-xs font-bold rounded-lg transition-all bg-white text-blue-600 shadow-sm">
-                Semua
-              </button>
-              <button type="button" onclick="setJenjangFilter('SMP')" id="filter-btn-SMP"
-                      class="filter-jenjang-btn flex-1 text-center py-2 px-1 text-xs font-semibold rounded-lg transition-all text-gray-600 hover:text-gray-900">
-                SMP
-              </button>
-              <button type="button" onclick="setJenjangFilter('SMA')" id="filter-btn-SMA"
-                      class="filter-jenjang-btn flex-1 text-center py-2 px-1 text-xs font-semibold rounded-lg transition-all text-gray-600 hover:text-gray-900">
-                SMA
-              </button>
-              <button type="button" onclick="setJenjangFilter('UMUM')" id="filter-btn-UMUM"
-                      class="filter-jenjang-btn flex-1 text-center py-2 px-1 text-xs font-semibold rounded-lg transition-all text-gray-600 hover:text-gray-900">
-                UMUM
-              </button>
-            </div>
           </div>
 
           {{-- Alamat --}}
@@ -237,19 +193,81 @@
 
       {{-- ── STEP 3: Pilih Lomba ── --}}
       <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-5 sm:p-6 mb-4">
-        <div class="flex items-center gap-3 mb-5">
-          <div class="w-8 h-8 bg-violet-600 rounded-xl flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
-            </svg>
+        <div class="flex items-start justify-between gap-3 mb-5 flex-wrap">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-violet-600 rounded-xl flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="font-bold text-gray-900 text-sm">Pilih Perlombaan</h2>
+              <p class="text-xs text-gray-400">
+                @if($lockedLomba) Lomba sudah dipilih dari halaman kategori @else Pilih jenis kelamin untuk melihat daftar lomba @endif
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 class="font-bold text-gray-900 text-sm">Pilih Perlombaan</h2>
-            <p class="text-xs text-gray-400">Pilih jenis kelamin untuk melihat daftar lomba</p>
+
+          {{-- Filter Jenjang Lomba — cuma relevan kalau lomba belum terkunci --}}
+          @unless($lockedLomba)
+          <div class="shrink-0">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] font-semibold text-gray-500">Filter Jenjang</span>
+              <span class="text-[10px] text-blue-600 font-bold ml-2" id="jenjang-label-badge">SEMUA</span>
+            </div>
+            <div class="flex items-center gap-1 bg-gray-100 p-1 rounded-xl border border-gray-200">
+              <button type="button" onclick="setJenjangFilter('SEMUA')" id="filter-btn-SEMUA"
+                      class="filter-jenjang-btn flex-1 text-center py-2 px-2.5 text-xs font-bold rounded-lg transition-all bg-white text-blue-600 shadow-sm">
+                Semua
+              </button>
+              <button type="button" onclick="setJenjangFilter('SMP')" id="filter-btn-SMP"
+                      class="filter-jenjang-btn flex-1 text-center py-2 px-2.5 text-xs font-semibold rounded-lg transition-all text-gray-600 hover:text-gray-900">
+                SMP
+              </button>
+              <button type="button" onclick="setJenjangFilter('SMA')" id="filter-btn-SMA"
+                      class="filter-jenjang-btn flex-1 text-center py-2 px-2.5 text-xs font-semibold rounded-lg transition-all text-gray-600 hover:text-gray-900">
+                SMA
+              </button>
+              <button type="button" onclick="setJenjangFilter('UMUM')" id="filter-btn-UMUM"
+                      class="filter-jenjang-btn flex-1 text-center py-2 px-2.5 text-xs font-semibold rounded-lg transition-all text-gray-600 hover:text-gray-900">
+                UMUM
+              </button>
+            </div>
           </div>
+          @endunless
         </div>
 
+        @if($lockedLomba)
+        {{-- Lomba terkunci — dipilih langsung dari tombol "Daftar" di card lomba,
+             tidak perlu memilih ulang dari daftar. --}}
+        <div class="border-2 {{ $isPutraForm ? 'border-blue-300 bg-blue-50/50' : 'border-pink-300 bg-pink-50/50' }} rounded-2xl px-4 py-3.5">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-{{ $formAccent }}-100 rounded-xl flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 text-{{ $formAccent }}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-sm text-gray-800">{{ $lockedLomba->nama_lomba }}</p>
+              <div class="flex items-center gap-1.5 mt-1">
+                <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full
+                  @if($lockedLomba->jenjang==='SMP') bg-teal-100 text-teal-700
+                  @elseif($lockedLomba->jenjang==='SMA') bg-indigo-100 text-indigo-700
+                  @else bg-amber-100 text-amber-700 @endif">{{ $lockedLomba->jenjang }}</span>
+                <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full {{ $lockedLomba->tipe==='team'?'bg-violet-100 text-violet-700':'bg-gray-100 text-gray-600' }}">
+                  {{ $lockedLomba->tipe==='team' ? '👥 Beregu' : '👤 Perorangan' }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <a href="{{ route('lomba.kategori', strtolower($genderLabel)) }}#lomba"
+             class="inline-block text-xs font-semibold text-{{ $formAccent }}-600 hover:underline mt-3">
+            Ganti pilihan lomba
+          </a>
+        </div>
+        <input type="hidden" name="id_lomba" id="id_lomba" value="{{ $lockedLomba->id }}">
+        @else
         <div id="lomba-placeholder"
              class="border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center">
           <div class="w-10 h-10 bg-gray-100 rounded-xl mx-auto mb-2 flex items-center justify-center">
@@ -266,6 +284,7 @@
         </div>
         <div id="lomba-list" class="hidden space-y-2.5"></div>
         <input type="hidden" name="id_lomba" id="id_lomba" value="{{ old('id_lomba') }}">
+        @endif
         @error('id_lomba')<p class="text-red-500 text-xs mt-2">{{ $message }}</p>@enderror
       </div>
 
@@ -327,6 +346,22 @@
         @error('link_twibbon')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
       </div>
 
+      {{-- ── Rekening Pembayaran (menyesuaikan gender yang dipilih di atas) ── --}}
+      <div id="rekening-box" class="hidden bg-emerald-50 border border-emerald-200 rounded-3xl p-5 sm:p-6 mb-6">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-8 h-8 bg-emerald-100 rounded-xl flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M6 15h2m3 0h5M4 6h16a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V7a1 1 0 011-1z"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="font-bold text-gray-900 text-sm">Rekening Pembayaran</h2>
+            <p class="text-xs text-gray-400">Transfer biaya pendaftaran ke rekening berikut, lalu unggah buktinya di bawah</p>
+          </div>
+        </div>
+        <div id="rekening-detail" class="bg-white border border-emerald-200 rounded-2xl p-4"></div>
+      </div>
+
       {{-- ── STEP 6: Upload Dokumen ── --}}
       <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-5 sm:p-6 mb-6">
         <div class="flex items-center gap-3 mb-4">
@@ -383,15 +418,13 @@
 
       {{-- Submit --}}
       <button type="submit" id="submitBtn"
-              @if($pendaftaranStatus !== 'dibuka') disabled @endif
               class="w-full font-bold py-4 rounded-2xl text-base transition-all shadow-lg flex items-center justify-center gap-3
-                     @if($pendaftaranStatus === 'dibuka') bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white shadow-blue-200
-                     @else bg-gray-300 text-gray-500 cursor-not-allowed shadow-none opacity-80 @endif">
+                     bg-{{ $formAccent }}-600 hover:bg-{{ $formAccent }}-700 active:scale-[0.99] text-white shadow-{{ $formAccent }}-200">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
-        {{ $pendaftaranStatus === 'dibuka' ? 'Kirim Pendaftaran' : 'Pendaftaran Nonaktif' }}
+        Kirim Pendaftaran
       </button>
       <p class="text-center text-xs text-gray-400 mt-3">
         Dengan mendaftar, Anda menyetujui syarat dan ketentuan {{ $festivalName }} {{ $festivalYear }}.
@@ -404,10 +437,12 @@
 @push('scripts')
 <script>
 const API_URL     = "{{ route('api.lomba') }}";
-const OLD_GENDER  = "{{ old('gender') }}";
+const LOCKED_GENDER = "{{ $genderLabel }}"; // gender terkunci dari halaman kategori asal, tidak lagi dipilih manual
+const LOCKED_LOMBA = @json($lockedLombaJs);
 const OLD_LOMBA   = "{{ old('id_lomba') }}";
+const REKENING_DATA = @json($rekenings);
 let currentLomba  = null;
-let currentGender = OLD_GENDER || null;
+let currentGender = LOCKED_GENDER;
 let rawLombaData  = [];
 let selectedJenjang = 'SEMUA';
 
@@ -614,10 +649,41 @@ function buildAnggotaFields(max) {
   }
 }
 
-document.querySelectorAll('input[name="gender"]').forEach(r =>
-  r.addEventListener('change', () => loadLomba(r.value))
-);
-if (OLD_GENDER) loadLomba(OLD_GENDER);
+// ── Rekening pembayaran (toggle sesuai gender terpilih) ─────────
+// REKENING_DATA[gender] berisi ARRAY (satu kategori bisa punya lebih dari satu rekening/bank).
+function showRekening(gender) {
+  const box  = document.getElementById('rekening-box');
+  const list = REKENING_DATA[gender] || [];
+  const detail = document.getElementById('rekening-detail');
+  if (!list.length) { box.classList.add('hidden'); detail.innerHTML = ''; return; }
+  detail.innerHTML = list.map((r, i) => `
+    <div class="flex items-center justify-between gap-3 flex-wrap w-full ${i > 0 ? 'pt-3 mt-3 border-t border-emerald-100' : ''}">
+      <div>
+        <p class="text-xs text-gray-400 font-semibold uppercase tracking-wider">${r.nama_bank}</p>
+        <p class="text-lg font-black text-gray-900 tracking-wide">${r.nomor_rekening}</p>
+        <p class="text-xs text-gray-500">a.n. ${r.atas_nama}</p>
+      </div>
+      <button type="button"
+              onclick="navigator.clipboard.writeText('${r.nomor_rekening}').then(() => { this.textContent='Disalin!'; setTimeout(() => this.textContent='Salin Nomor', 1500); })"
+              class="text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-3 py-2 rounded-xl transition-all shrink-0 border border-emerald-200">
+        Salin Nomor
+      </button>
+    </div>`).join('');
+  box.classList.remove('hidden');
+}
+
+// Gender sudah terkunci (hidden input) — langsung muat rekening kategori ini,
+// tidak perlu lagi menunggu radio dipilih.
+showRekening(LOCKED_GENDER);
+
+if (LOCKED_LOMBA) {
+  // Lomba juga sudah terkunci dari card "Daftar" — tidak perlu fetch daftar lomba
+  // sama sekali, id_lomba sudah terisi via hidden input server-side. Cukup munculkan
+  // section Data Tim kalau lombanya tipe beregu.
+  if (LOCKED_LOMBA.tipe === 'team') showTeamSection(LOCKED_LOMBA);
+} else {
+  loadLomba(LOCKED_GENDER);
+}
 
 // ── File upload ──────────────────────────────────────────────
 function setupUpload(inputId, idleId, doneId, nameId, labelId) {

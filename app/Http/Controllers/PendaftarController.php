@@ -4,17 +4,19 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use App\Models\Pendaftar;
+use App\Http\Controllers\Concerns\ScopesByAdminGender;
 
 class PendaftarController extends Controller
 {
-    private function allowed(): array {
-        return match(session('admin_user.role')){ 'admin_putra'=>['Putra'],'admin_putri'=>['Putri'],default=>['Putra','Putri'] };
-    }
-    private function check(Pendaftar $p): void { if(!in_array($p->gender,$this->allowed())) abort(403); }
+    use ScopesByAdminGender;
+
+    // Otorisasi per-record (IDOR) sudah ditangani middleware `gender.access`
+    // pada route group admin (lihat routes/web.php). allowedGenders() di sini
+    // dipakai untuk scope query listing & export.
 
     public function index(Request $request)
     {
-        $allowed=$this->allowed(); $role=session('admin_user.role');
+        $allowed=$this->allowedGenders(); $role=session('admin_user.role');
         $q=Pendaftar::with('lomba')->whereIn('gender',$allowed);
         if($role==='superadmin'&&$request->filled('gender')&&in_array($request->gender,['Putra','Putri'])) $q->where('gender',$request->gender);
         if($request->filled('search')){ $s=$request->search; $q->where(fn($qq)=>$qq->where('nama','like',"%$s%")->orWhere('nisn','like',"%$s%")->orWhere('nama_sekolah','like',"%$s%")); }
@@ -25,14 +27,12 @@ class PendaftarController extends Controller
 
     public function show(Pendaftar $pendaftar)
     {
-        $this->check($pendaftar);
         $pendaftar->load(['lomba','anggotaTim']);
         return view('admin.pendaftar.show',compact('pendaftar'));
     }
 
     public function verifikasi(Request $request, Pendaftar $pendaftar)
     {
-        $this->check($pendaftar);
         $request->validate(['status'=>'required|in:Belum,Terverifikasi,Ditolak']);
         $pendaftar->update(['status_verifikasi'=>$request->status]);
         return back()->with('success','Status diperbarui menjadi "'.$request->status.'".');
@@ -40,7 +40,6 @@ class PendaftarController extends Controller
 
     public function destroy(Pendaftar $pendaftar)
     {
-        $this->check($pendaftar);
         foreach(['kartu_siswa','bukti_pembayaran'] as $f){ $field='file_'.$f; $p=storage_path("app/public/{$f}/{$pendaftar->$field}"); if(file_exists($p)&&!str_starts_with($pendaftar->$field,'dummy_')) unlink($p); }
         $pendaftar->delete();
         return redirect()->route('admin.pendaftar.index')->with('success','Pendaftar dihapus.');
@@ -48,7 +47,7 @@ class PendaftarController extends Controller
 
     public function export(Request $request)
     {
-        $allowed=$this->allowed(); $role=session('admin_user.role'); $format=$request->get('format','csv');
+        $allowed=$this->allowedGenders(); $role=session('admin_user.role'); $format=$request->get('format','csv');
         $q=Pendaftar::with(['lomba','anggotaTim'])->whereIn('gender',$allowed);
         if($role==='superadmin'&&$request->filled('gender')&&in_array($request->gender,['Putra','Putri'])) $q->where('gender',$request->gender);
         $rows=$q->orderBy('gender')->orderBy('created_at')->get();
