@@ -203,6 +203,44 @@
     })();
     </script>
 
+    {{-- Validasi ukuran file di sisi klien — mencegah error 413 Request Entity Too Large
+         dengan menolak file yang kelebihan ukuran SEBELUM sempat dikirim ke server.
+         Pola sama seperti [data-confirm] di atas: cukup tambahkan atribut di Blade,
+         tidak perlu tulis ulang JS di tiap halaman.
+         Cara pakai pada <input type="file">:
+           data-max-size-kb="2048"        -> batas ukuran dalam KB (2048 = 2MB)
+           data-error-target="idElemenPesan" -> id elemen <p>/<div> tempat pesan error ditampilkan
+         Dipasang di fase CAPTURE (true) supaya jalan LEBIH DULU daripada listener
+         'change' lain yang mungkin sudah dipasang langsung pada input itu (mis. preview
+         gambar), sehingga input sudah kosong sebelum listener lain sempat membaca file. --}}
+    <script>
+    document.addEventListener('change', function(e){
+        const input = e.target;
+        if (!input.matches || !input.matches('input[type="file"][data-max-size-kb]')) return;
+
+        const maxKB = parseInt(input.dataset.maxSizeKb, 10);
+        const errorEl = input.dataset.errorTarget ? document.getElementById(input.dataset.errorTarget) : null;
+        const files = Array.from(input.files || []);
+
+        if (errorEl) errorEl.classList.add('hidden');
+        if (!files.length) return;
+
+        const tooBig = files.find(f => f.size > maxKB * 1024);
+        if (tooBig) {
+            const maxMB = maxKB / 1024;
+            const label = Number.isInteger(maxMB) ? maxMB : maxMB.toFixed(1);
+            const msg = `Ukuran file terlalu besar! Maksimal ukuran file adalah ${label} MB.`;
+            if (errorEl) {
+                errorEl.textContent = msg;
+                errorEl.classList.remove('hidden');
+            } else {
+                alert(msg);
+            }
+            input.value = '';
+        }
+    }, true);
+    </script>
+
     @stack('scripts')
 </body>
 </html>

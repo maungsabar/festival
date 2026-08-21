@@ -182,7 +182,8 @@
             <p class="text-xs font-semibold text-gray-600 mb-2">Logo Header & Sidebar</p>
             <label id="logoLabel" class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-200
                    hover:border-violet-400 hover:bg-violet-50/30 rounded-2xl p-5 cursor-pointer transition-all">
-              <input type="file" name="festival_logo" id="logoInput" accept=".png,.jpg,.jpeg,.svg,.webp" class="sr-only">
+              <input type="file" name="festival_logo" id="logoInput" accept=".png,.jpg,.jpeg,.svg,.webp" class="sr-only"
+                     data-max-size-kb="2048" data-error-target="logoSizeError">
               <div id="logoIdle" class="text-center">
                 <div class="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-2">
                   <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,6 +200,7 @@
                 <p class="text-[10px] text-violet-600 mt-0.5">✓ File dipilih</p>
               </div>
             </label>
+            <p id="logoSizeError" class="hidden text-red-500 text-xs mt-1">Ukuran file terlalu besar! Maksimal ukuran file adalah 2 MB.</p>
             @error('festival_logo')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
             @if($settings['festival_logo'])
             <label class="flex items-center gap-1.5 mt-2 cursor-pointer">
@@ -213,7 +215,8 @@
             <p class="text-xs font-semibold text-gray-600 mb-2">Logo Hero (Beranda)</p>
             <label id="logoHeroLabel" class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-200
                    hover:border-indigo-400 hover:bg-indigo-50/30 rounded-2xl p-5 cursor-pointer transition-all">
-              <input type="file" name="festival_logo_hero" id="logoHeroInput" accept=".png,.jpg,.jpeg,.svg,.webp" class="sr-only">
+              <input type="file" name="festival_logo_hero" id="logoHeroInput" accept=".png,.jpg,.jpeg,.svg,.webp" class="sr-only"
+                     data-max-size-kb="2048" data-error-target="logoHeroSizeError">
               <div id="logoHeroIdle" class="text-center">
                 <div class="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-2">
                   <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -230,6 +233,7 @@
                 <p class="text-[10px] text-indigo-600 mt-0.5">✓ File dipilih</p>
               </div>
             </label>
+            <p id="logoHeroSizeError" class="hidden text-red-500 text-xs mt-1">Ukuran file terlalu besar! Maksimal ukuran file adalah 2 MB.</p>
             @error('festival_logo_hero')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
             @if($settings['festival_logo_hero'])
             <label class="flex items-center gap-1.5 mt-2 cursor-pointer">
@@ -298,7 +302,8 @@
         {{-- Upload Gambar Baru (Multiple) --}}
         <label id="heroBgLabel" class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-200
                hover:border-indigo-400 hover:bg-indigo-50/30 rounded-2xl p-5 cursor-pointer transition-all">
-          <input type="file" name="hero_bg_images[]" id="heroBgInput" accept=".jpg,.jpeg,.png,.webp" multiple class="sr-only">
+          <input type="file" name="hero_bg_images[]" id="heroBgInput" accept=".jpg,.jpeg,.png,.webp" multiple class="sr-only"
+                 data-max-size-kb="5120" data-error-target="heroBgSizeError">
           <div id="heroBgIdle" class="text-center">
             <div class="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-2">
               <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -315,6 +320,7 @@
             <p class="text-[10px] text-indigo-600 mt-0.5">✓ File dipilih dan siap disimpan</p>
           </div>
         </label>
+        <p id="heroBgSizeError" class="hidden text-red-500 text-xs mt-2">Ukuran file terlalu besar! Maksimal ukuran file adalah 5 MB.</p>
         @error('hero_bg_images')<p class="text-red-500 text-xs mt-2">{{ $message }}</p>@enderror
         @error('hero_bg_images.*')<p class="text-red-500 text-xs mt-2">{{ $message }}</p>@enderror
       </div>
@@ -368,11 +374,13 @@
 
             <label class="flex items-center justify-center gap-2 border-2 border-dashed border-blue-200
                    hover:border-blue-400 hover:bg-blue-50 rounded-xl p-3 cursor-pointer transition-all">
-              <input type="file" name="hero_putra_bg_image" id="heroPutraBgInput" accept=".jpg,.jpeg,.png,.webp" class="sr-only">
+              <input type="file" name="hero_putra_bg_image" id="heroPutraBgInput" accept=".jpg,.jpeg,.png,.webp" class="sr-only"
+                     data-max-size-kb="5120" data-error-target="heroPutraBgSizeError">
               <span id="heroPutraBgFileName" class="text-[11px] text-blue-700 font-semibold">
                 {{ $settings['hero_putra_bg_image'] ? 'Ganti Gambar Hero Putra' : 'Upload Gambar Hero Putra' }}
               </span>
             </label>
+            <p id="heroPutraBgSizeError" class="hidden text-red-500 text-[10px] mt-1">Ukuran file terlalu besar! Maksimal ukuran file adalah 5 MB.</p>
             @error('hero_putra_bg_image')<p class="text-red-500 text-[10px] mt-1">{{ $message }}</p>@enderror
             @if($settings['hero_putra_bg_image'])
             <label class="flex items-center gap-1.5 mt-2 cursor-pointer">
@@ -394,10 +402,12 @@
                     @endif
                   </div>
                   <label class="flex-1 flex items-center justify-center gap-1.5 border-2 border-dashed border-blue-200 hover:border-blue-400 hover:bg-blue-50 rounded-lg px-2 py-2 cursor-pointer transition-all">
-                    <input type="file" name="logo_tahunan_putra" id="logoTahunanPutraInput" accept=".png,.jpg,.jpeg,.svg,.webp" class="sr-only">
+                    <input type="file" name="logo_tahunan_putra" id="logoTahunanPutraInput" accept=".png,.jpg,.jpeg,.svg,.webp" class="sr-only"
+                           data-max-size-kb="2048" data-error-target="logoTahunanPutraSizeError">
                     <span id="logoTahunanPutraFileName" class="text-[10px] text-blue-700 font-semibold truncate">Upload / Ganti Logo</span>
                   </label>
                 </div>
+                <p id="logoTahunanPutraSizeError" class="hidden text-red-500 text-[10px] mt-1">Ukuran file terlalu besar! Maksimal ukuran file adalah 2 MB.</p>
                 @error('logo_tahunan_putra')<p class="text-red-500 text-[10px] mt-1">{{ $message }}</p>@enderror
                 @if($settings['logo_tahunan_putra'])
                 <label class="flex items-center gap-1.5 mt-1.5 cursor-pointer">
@@ -465,11 +475,13 @@
 
             <label class="flex items-center justify-center gap-2 border-2 border-dashed border-pink-200
                    hover:border-pink-400 hover:bg-pink-50 rounded-xl p-3 cursor-pointer transition-all">
-              <input type="file" name="hero_putri_bg_image" id="heroPutriBgInput" accept=".jpg,.jpeg,.png,.webp" class="sr-only">
+              <input type="file" name="hero_putri_bg_image" id="heroPutriBgInput" accept=".jpg,.jpeg,.png,.webp" class="sr-only"
+                     data-max-size-kb="5120" data-error-target="heroPutriBgSizeError">
               <span id="heroPutriBgFileName" class="text-[11px] text-pink-700 font-semibold">
                 {{ $settings['hero_putri_bg_image'] ? 'Ganti Gambar Hero Putri' : 'Upload Gambar Hero Putri' }}
               </span>
             </label>
+            <p id="heroPutriBgSizeError" class="hidden text-red-500 text-[10px] mt-1">Ukuran file terlalu besar! Maksimal ukuran file adalah 5 MB.</p>
             @error('hero_putri_bg_image')<p class="text-red-500 text-[10px] mt-1">{{ $message }}</p>@enderror
             @if($settings['hero_putri_bg_image'])
             <label class="flex items-center gap-1.5 mt-2 cursor-pointer">
@@ -491,10 +503,12 @@
                     @endif
                   </div>
                   <label class="flex-1 flex items-center justify-center gap-1.5 border-2 border-dashed border-pink-200 hover:border-pink-400 hover:bg-pink-50 rounded-lg px-2 py-2 cursor-pointer transition-all">
-                    <input type="file" name="logo_tahunan_putri" id="logoTahunanPutriInput" accept=".png,.jpg,.jpeg,.svg,.webp" class="sr-only">
+                    <input type="file" name="logo_tahunan_putri" id="logoTahunanPutriInput" accept=".png,.jpg,.jpeg,.svg,.webp" class="sr-only"
+                           data-max-size-kb="2048" data-error-target="logoTahunanPutriSizeError">
                     <span id="logoTahunanPutriFileName" class="text-[10px] text-pink-700 font-semibold truncate">Upload / Ganti Logo</span>
                   </label>
                 </div>
+                <p id="logoTahunanPutriSizeError" class="hidden text-red-500 text-[10px] mt-1">Ukuran file terlalu besar! Maksimal ukuran file adalah 2 MB.</p>
                 @error('logo_tahunan_putri')<p class="text-red-500 text-[10px] mt-1">{{ $message }}</p>@enderror
                 @if($settings['logo_tahunan_putri'])
                 <label class="flex items-center gap-1.5 mt-1.5 cursor-pointer">
@@ -687,7 +701,6 @@ iName.addEventListener('input',sync); iYear.addEventListener('input',sync); iTag
 // Logo Header upload preview
 document.getElementById('logoInput').addEventListener('change',function(){
   const file=this.files[0]; if(!file) return;
-  if(file.size>2*1024*1024){alert('Ukuran logo maksimal 2MB!');this.value='';return;}
   const r=new FileReader();
   r.onload=e=>{
     const src=e.target.result;
@@ -706,7 +719,6 @@ document.getElementById('logoInput').addEventListener('change',function(){
 // Logo Hero upload preview
 document.getElementById('logoHeroInput').addEventListener('change',function(){
   const file=this.files[0]; if(!file) return;
-  if(file.size>2*1024*1024){alert('Ukuran logo maksimal 2MB!');this.value='';return;}
   const r=new FileReader();
   r.onload=e=>{
     const src=e.target.result;
@@ -728,14 +740,6 @@ if (heroBgInput) {
   heroBgInput.addEventListener('change', function() {
     const files = Array.from(this.files);
     if (!files.length) return;
-
-    for (let f of files) {
-      if (f.size > 5 * 1024 * 1024) {
-        alert(`Ukuran file "${f.name}" melebihi 5MB!`);
-        this.value = '';
-        return;
-      }
-    }
 
     document.getElementById('heroBgIdle').classList.add('hidden');
     const doneEl = document.getElementById('heroBgDone');
@@ -807,7 +811,6 @@ function setupKategoriHeroPicker(prefix) {
     fileInput.addEventListener('change', function () {
       const file = this.files[0];
       if (!file) return;
-      if (file.size > 5 * 1024 * 1024) { alert('Ukuran gambar maksimal 5MB!'); this.value = ''; return; }
       const r = new FileReader();
       r.onload = e => {
         if (bgImg) { bgImg.src = e.target.result; bgImg.classList.remove('hidden'); bgImg.style.opacity = (100 - parseInt(opacityEl.value)) / 100; }
@@ -829,7 +832,6 @@ function setupLogoTahunanPicker(prefix) {
   input.addEventListener('change', function () {
     const file = this.files[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) { alert('Ukuran logo maksimal 2MB!'); this.value = ''; return; }
     const r = new FileReader();
     r.onload = e => {
       if (preview) preview.outerHTML = `<img src="${e.target.result}" id="logoTahunan${prefix}Preview" class="w-full h-full object-contain p-1" alt="">`;

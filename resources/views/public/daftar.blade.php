@@ -389,7 +389,8 @@
                           {{ $errors->has($fieldName)?'border-red-300 bg-red-50':'border-gray-200 hover:border-'.$c.'-400 hover:bg-'.$c.'-50/30' }}
                           rounded-2xl p-5 cursor-pointer transition-all min-h-[120px]">
               <input type="file" name="{{ $fieldName }}" id="{{ $inputId }}"
-                     accept=".jpg,.jpeg,.png,.gif,.pdf" class="sr-only">
+                     accept=".jpg,.jpeg,.png,.gif,.pdf" class="sr-only"
+                     data-max-size-kb="2048" data-error-target="{{ $inputId }}SizeError">
               <div id="{{ $idleId }}" class="text-center">
                 <div class="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-1.5">
                   <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -410,6 +411,7 @@
                 <p class="text-xs text-green-500 mt-0.5">✓ File dipilih</p>
               </div>
             </label>
+            <p id="{{ $inputId }}SizeError" class="hidden text-red-500 text-xs mt-1">Ukuran file terlalu besar! Maksimal ukuran file adalah 2 MB.</p>
             @error($fieldName)<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
           </div>
           @endforeach
@@ -690,7 +692,6 @@ function setupUpload(inputId, idleId, doneId, nameId, labelId) {
   document.getElementById(inputId).addEventListener('change', function() {
     const file = this.files[0];
     if (!file) return;
-    if (file.size > 2*1024*1024) { alert('Ukuran file maksimal 2MB!'); this.value=''; return; }
     document.getElementById(idleId).classList.add('hidden');
     document.getElementById(doneId).classList.remove('hidden');
     document.getElementById(nameId).textContent = file.name;

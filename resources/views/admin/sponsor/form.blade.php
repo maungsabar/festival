@@ -48,7 +48,9 @@
       <div>
         <label class="block text-sm font-semibold text-gray-700 mb-1.5">Logo Sponsor <span class="text-red-500">{{ $sponsor ? '' : '*' }}</span> <span class="text-gray-400 text-xs font-normal">(PNG/JPG/SVG/WebP, maks 2MB)</span></label>
         <input type="file" name="logo" accept="image/*" {{ $sponsor ? '' : 'required' }}
+               data-max-size-kb="2048" data-error-target="logoSizeError"
                class="w-full border border-gray-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+        <p id="logoSizeError" class="hidden text-red-500 text-xs mt-1">Ukuran file terlalu besar! Maksimal ukuran file adalah 2 MB.</p>
         @if($sponsor && $sponsor->logo)
           <div class="mt-3 flex items-center gap-3">
             <div class="w-16 h-12 border border-gray-200 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">

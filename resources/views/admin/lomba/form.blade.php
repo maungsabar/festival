@@ -161,7 +161,9 @@
       <div class="mb-2">
         <label class="block text-sm font-semibold text-gray-700 mb-1.5">Gambar Lomba <span class="text-gray-400 text-xs font-normal">(Rekomendasi 2:3, JPG/PNG/WebP, maks 2MB)</span></label>
         <input type="file" name="gambar" accept="image/*"
+               data-max-size-kb="2048" data-error-target="gambarSizeError"
                class="w-full border border-gray-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+        <p id="gambarSizeError" class="hidden text-red-500 text-xs mt-1">Ukuran file terlalu besar! Maksimal ukuran file adalah 2 MB.</p>
         @if($lomba && $lomba->gambar)
           <div class="mt-3 flex items-center gap-3">
             <img src="{{ asset('storage/lomba_images/' . $lomba->gambar) }}" class="w-16 h-12 object-cover rounded-lg border border-gray-200">
@@ -224,9 +226,11 @@
         <span class="text-[10px] text-gray-400 font-normal">(opsional)</span>
       </h2>
       <div class="mb-2">
-        <label class="block text-sm font-semibold text-gray-700 mb-1.5">File Guidebook <span class="text-gray-400 text-xs font-normal">(Hanya PDF, maks 2MB)</span></label>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">File Guidebook <span class="text-gray-400 text-xs font-normal">(Hanya PDF, maks 10MB)</span></label>
         <input type="file" name="file_guidebook" accept="application/pdf"
+               data-max-size-kb="10240" data-error-target="guidebookSizeError"
                class="w-full border border-gray-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+        <p id="guidebookSizeError" class="hidden text-red-500 text-xs mt-1">Ukuran file terlalu besar! Maksimal ukuran file adalah 10 MB.</p>
         @if($lomba && $lomba->file_guidebook)
           <div class="mt-3 flex items-center gap-2">
             <span class="text-red-500 text-lg">📄</span>

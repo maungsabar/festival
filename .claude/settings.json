@@ -41,7 +41,11 @@
       "Bash(php -l app/Models/Merchandise.php)",
       "Bash(php artisan *)",
       "Bash(curl -s http://127.0.0.1:8400/lomba/putra -o /tmp/putra_nomerch.html -w \"%{http_code}\\\\n\")",
-      "Bash(curl -s http://127.0.0.1:8400/lomba/putra/merchandise -o /tmp/merch_empty.html -w \"%{http_code}\\\\n\")"
+      "Bash(curl -s http://127.0.0.1:8400/lomba/putra/merchandise -o /tmp/merch_empty.html -w \"%{http_code}\\\\n\")",
+      "Bash(curl -s \"http://127.0.0.1:8971/daftar/putra\" -o /tmp/daftar.html -w \"daftar status: %{http_code}\\\\n\")",
+      "Bash(curl -s \"http://127.0.0.1:8971/daftar?gender=putra\" -o /tmp/daftar.html -w \"daftar status: %{http_code}\\\\n\")",
+      "Bash(pkill -f \"artisan serve --port=8971\")",
+      "Bash(rm -f /tmp/kategori.html /tmp/daftar.html /tmp/serve_out.log)"
     ]
   }
 }
