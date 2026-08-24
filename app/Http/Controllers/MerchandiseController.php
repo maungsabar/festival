@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Merchandise;
+use App\Models\Rekening;
+use App\Models\Setting;
 use App\Http\Controllers\Concerns\ScopesByAdminGender;
 
 /**
@@ -129,5 +131,159 @@ class MerchandiseController extends Controller
         }
         $merchandise->delete();
         return redirect()->route('admin.merchandise.index')->with('success', 'Merchandise dihapus.');
+    }
+
+    /**
+     * Skema field "Setup" (tampilan header katalog publik + pilihan nomor WA
+     * pemesanan) — per gender, sama gaya seperti SettingController::genderedFieldsSchema().
+     * Disimpan lewat Setting::get/set (key generik, tidak perlu tabel baru).
+     */
+    private function setupFieldsSchema(): array
+    {
+        return [
+            ['key' => 'merchandise_hero_image',        'label' => 'Gambar Header',            'type' => 'file', 'rules' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:2048', 'folder' => 'merchandise_header', 'default' => null],
+            ['key' => 'merchandise_judul',              'label' => 'Judul Header',              'type' => 'text', 'rules' => 'nullable|string|max:150', 'default' => null],
+            ['key' => 'merchandise_tagline',             'label' => 'Tagline Header',            'type' => 'text', 'rules' => 'nullable|string|max:200', 'default' => null],
+            ['key' => 'merchandise_whatsapp_pilihan',    'label' => 'Nomor WA Dipakai',          'type' => 'text', 'rules' => 'required|in:1,2', 'default' => '1'],
+        ];
+    }
+
+    /**
+     * Resolve gender aktif untuk halaman Setup dari query string ?gender=,
+     * dikunci ke allowedGenders() admin yang login (pola sama seperti
+     * PublicController::showForm() mengunci gender dari URL).
+     */
+    private function resolveSetupGender(Request $request): string
+    {
+        $allowed = $this->allowedGenders();
+        $query   = $request->query('gender');
+        $label   = $query === 'putri' ? 'Putri' : ($query === 'putra' ? 'Putra' : null);
+        return ($label && in_array($label, $allowed, true)) ? $label : $allowed[0];
+    }
+
+    public function setup(Request $request)
+    {
+        $allowed = $this->allowedGenders();
+        $gender  = $this->resolveSetupGender($request);
+        $schema  = $this->setupFieldsSchema();
+
+        $settings = [];
+        foreach ($schema as $f) {
+            $settings[$f['key']] = Setting::get($f['key'], $f['default'], $gender);
+        }
+
+        $waRef = [
+            '1' => ['nomor' => Setting::get('contact_whatsapp_1', null, $gender), 'nama' => Setting::get('contact_whatsapp_1_nama', null, $gender)],
+            '2' => ['nomor' => Setting::get('contact_whatsapp_2', null, $gender), 'nama' => Setting::get('contact_whatsapp_2_nama', null, $gender)],
+        ];
+
+        $rekenings = Rekening::where('gender', $gender)
+            ->where('konteks', 'merchandise')
+            ->orderBy('nama_bank')
+            ->get();
+
+        return view('admin.merchandise.setup', compact('settings', 'gender', 'allowed', 'waRef', 'rekenings'));
+    }
+
+    public function updateSetup(Request $request)
+    {
+        $allowed = $this->allowedGenders();
+        $gender  = (in_array($request->input('gender'), $allowed, true)) ? $request->input('gender') : $allowed[0];
+        $schema  = $this->setupFieldsSchema();
+
+        $rules = [];
+        foreach ($schema as $f) {
+            $rules[$f['key']] = $f['rules'];
+        }
+        $request->validate($rules);
+
+        foreach ($schema as $f) {
+            $key = $f['key'];
+
+            if ($f['type'] === 'file') {
+                if ($request->hasFile($key)) {
+                    $old = Setting::get($key, null, $gender);
+                    if ($old) {
+                        $p = storage_path("app/public/{$f['folder']}/{$old}");
+                        if (file_exists($p)) @unlink($p);
+                    }
+                    $file = $request->file($key);
+                    $ext  = $file->extension() ?: $file->getClientOriginalExtension();
+                    $name = $key . '_' . strtolower($gender) . '_' . time() . '.' . $ext;
+                    $file->move(storage_path("app/public/{$f['folder']}"), $name);
+                    Setting::set($key, $name, $gender);
+                } elseif ($request->boolean("remove_{$key}")) {
+                    $old = Setting::get($key, null, $gender);
+                    if ($old) {
+                        $p = storage_path("app/public/{$f['folder']}/{$old}");
+                        if (file_exists($p)) @unlink($p);
+                    }
+                    Setting::set($key, '', $gender);
+                }
+                continue;
+            }
+
+            Setting::set($key, $request->input($key, ''), $gender);
+        }
+
+        return redirect()->route('admin.merchandise.setup', ['gender' => strtolower($gender)])
+            ->with('success', 'Setup merchandise kategori ' . $gender . ' berhasil disimpan.');
+    }
+
+    public function rekeningStore(Request $request)
+    {
+        $allowed = $this->allowedGenders();
+
+        $request->validate([
+            'gender'         => ['required', 'in:' . implode(',', $allowed)],
+            'nama_bank'      => 'required|string|max:100',
+            'nomor_rekening' => 'required|string|max:50',
+            'atas_nama'      => 'required|string|max:150',
+            'aktif'          => 'nullable|boolean',
+        ]);
+
+        Rekening::create([
+            'gender'         => count($allowed) === 1 ? $allowed[0] : $request->gender,
+            'konteks'        => 'merchandise',
+            'nama_bank'      => $request->nama_bank,
+            'nomor_rekening' => $request->nomor_rekening,
+            'atas_nama'      => $request->atas_nama,
+            'aktif'          => $request->boolean('aktif', true),
+        ]);
+
+        return redirect()->route('admin.merchandise.setup', ['gender' => strtolower(count($allowed) === 1 ? $allowed[0] : $request->gender)])
+            ->with('success', 'Rekening merchandise ditambahkan.');
+    }
+
+    public function rekeningUpdate(Request $request, Rekening $rekening)
+    {
+        $allowed = $this->allowedGenders();
+
+        $request->validate([
+            'gender'         => ['required', 'in:' . implode(',', $allowed)],
+            'nama_bank'      => 'required|string|max:100',
+            'nomor_rekening' => 'required|string|max:50',
+            'atas_nama'      => 'required|string|max:150',
+            'aktif'          => 'nullable|boolean',
+        ]);
+
+        $rekening->update([
+            'gender'         => count($allowed) === 1 ? $allowed[0] : $request->gender,
+            'nama_bank'      => $request->nama_bank,
+            'nomor_rekening' => $request->nomor_rekening,
+            'atas_nama'      => $request->atas_nama,
+            'aktif'          => $request->boolean('aktif', false),
+        ]);
+
+        return redirect()->route('admin.merchandise.setup', ['gender' => strtolower($rekening->gender)])
+            ->with('success', 'Rekening merchandise diperbarui.');
+    }
+
+    public function rekeningDestroy(Rekening $rekening)
+    {
+        $gender = $rekening->gender;
+        $rekening->delete();
+        return redirect()->route('admin.merchandise.setup', ['gender' => strtolower($gender)])
+            ->with('success', 'Rekening merchandise dihapus.');
     }
 }

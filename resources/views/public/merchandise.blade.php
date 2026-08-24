@@ -33,16 +33,21 @@
 </nav>
 
 {{-- ── Header ── --}}
-<section class="bg-gradient-to-br {{ $isPutra ? 'from-blue-600 to-indigo-700' : 'from-pink-500 to-rose-600' }} py-14">
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+<section class="relative bg-gradient-to-br {{ $isPutra ? 'from-blue-600 to-indigo-700' : 'from-pink-500 to-rose-600' }} py-14 overflow-hidden">
+  @if($merchHeroImageGender)
+  <img src="{{ asset('storage/merchandise_header/'.$merchHeroImageGender) }}"
+       class="absolute inset-0 w-full h-full object-cover" alt="">
+  <div class="absolute inset-0 bg-black/50"></div>
+  @endif
+  <div class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center">
     <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-white/15 border border-white/20 flex items-center justify-center text-2xl">
       🛍️
     </div>
     <div class="inline-flex items-center gap-2 bg-white/15 border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
       {{ $isPutra ? '♂' : '♀' }} Kategori {{ $genderLabel }}
     </div>
-    <h1 class="text-3xl sm:text-4xl font-black text-white mb-2">Merchandise {{ $genderLabel }}</h1>
-    <p class="text-white/80 text-sm">Dukung {{ $festivalName }} {{ $festivalYear }} dengan merchandise resmi kami.</p>
+    <h1 class="text-3xl sm:text-4xl font-black text-white mb-2">{{ $merchJudulGender ?: 'Merchandise '.$genderLabel }}</h1>
+    <p class="text-white/80 text-sm">{{ $merchTaglineGender ?: 'Dukung '.$festivalName.' '.$festivalYear.' dengan merchandise resmi kami.' }}</p>
   </div>
 </section>
 
@@ -52,11 +57,21 @@
     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
       @forelse($merchandises as $m)
       @php $habis = $m->stok !== null && $m->stok <= 0; @endphp
-      <div class="bg-white border {{ $habis ? 'border-gray-200 opacity-70' : 'border-gray-100 hover:border-'.$accent.'-200 hover:shadow-md' }}
-                  rounded-2xl p-5 transition-all duration-200 {{ $habis ? '' : 'hover:-translate-y-0.5' }}">
+      <div class="merch-card bg-white border {{ $habis ? 'border-gray-200 opacity-70' : 'border-gray-100 hover:border-'.$accent.'-200 hover:shadow-md' }}
+                  rounded-2xl p-5 transition-all duration-200 {{ $habis ? '' : 'hover:-translate-y-0.5' }}"
+           data-id="{{ $m->id }}"
+           data-order-url="{{ route('merchandise.order', $m) }}"
+           data-img="{{ $m->gambar ? asset('storage/merchandise/'.$m->gambar) : '' }}"
+           data-name="{{ $m->nama }}"
+           data-price="Rp{{ number_format($m->harga, 0, ',', '.') }}"
+           data-harga="{{ $m->harga }}"
+           data-desc="{{ $m->deskripsi }}"
+           data-stok="{{ $m->stok ?? '' }}"
+           data-stock-note="{{ $habis ? 'Stok habis' : ($m->stok !== null ? 'Sisa stok: '.$m->stok : '') }}">
 
-        {{-- Foto --}}
-        <div class="w-full aspect-square rounded-xl overflow-hidden mb-4 border border-gray-100 flex items-center justify-center relative bg-gradient-to-br {{ $isPutra ? 'from-blue-500/10 to-indigo-500/10' : 'from-pink-500/10 to-rose-500/10' }}">
+        {{-- Foto (klik untuk lihat detail) --}}
+        <button type="button" onclick="openProductDetail(this.closest('.merch-card'))"
+                class="group w-full aspect-square rounded-xl overflow-hidden mb-4 border border-gray-100 flex items-center justify-center relative bg-gradient-to-br {{ $isPutra ? 'from-blue-500/10 to-indigo-500/10' : 'from-pink-500/10 to-rose-500/10' }} cursor-zoom-in">
           @if($m->gambar)
             <img src="{{ asset('storage/merchandise/' . $m->gambar) }}" class="w-full h-full object-cover">
           @else
@@ -65,13 +80,22 @@
           @if($habis)
           <span class="absolute top-2 right-2 text-[10px] font-semibold bg-red-100 text-red-600 px-2 py-0.5 rounded-full">Stok Habis</span>
           @endif
-        </div>
+          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
+            <span class="opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs font-semibold inline-flex items-center gap-1">
+              🔍 Lihat Detail
+            </span>
+          </div>
+        </button>
 
         <p class="font-bold text-gray-900 text-sm mb-1 {{ $habis ? 'text-gray-400' : '' }}">{{ $m->nama }}</p>
         <p class="text-{{ $accent }}-600 font-black text-base mb-2">Rp{{ number_format($m->harga, 0, ',', '.') }}</p>
 
         @if($m->deskripsi)
-        <p class="text-gray-400 text-xs leading-relaxed mb-3 line-clamp-2">{{ $m->deskripsi }}</p>
+        <p class="text-gray-400 text-xs leading-relaxed mb-1 line-clamp-2">{{ $m->deskripsi }}</p>
+        <button type="button" onclick="openProductDetail(this.closest('.merch-card'))"
+                class="text-{{ $accent }}-600 hover:underline text-[11px] font-semibold mb-3">
+          Lihat detail &rarr;
+        </button>
         @endif
 
         @if($m->stok !== null && !$habis)
@@ -84,23 +108,40 @@
                          bg-gray-100 text-gray-400 py-2.5 rounded-xl cursor-not-allowed">
             Stok Habis
           </button>
-        @elseif($contactWaGender1)
-          <a href="https://wa.me/{{ preg_replace('/[^0-9]/','', $contactWaGender1) }}?text={{ urlencode('Halo, saya mau pesan '.$m->nama.' ('.$genderLabel.').') }}"
-             target="_blank"
-             class="w-full flex items-center justify-center gap-1.5 text-xs font-semibold
-                    bg-{{ $accent }}-50 hover:bg-{{ $accent }}-100 text-{{ $accent }}-700 py-2.5 rounded-xl transition-all">
-            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-            </svg>
-            Pesan via WhatsApp
-          </a>
         @else
-          <button disabled
-                  class="w-full flex items-center justify-center gap-1.5 text-xs font-semibold
-                         bg-gray-100 text-gray-400 py-2.5 rounded-xl cursor-not-allowed"
-                  title="Kontak pemesanan belum diatur admin">
-            Kontak Belum Tersedia
-          </button>
+        <div class="grid grid-cols-2 gap-2">
+          @if($merchRekeningsGender->isNotEmpty())
+            <button type="button" onclick="openOrderModal(this.closest('.merch-card'))"
+                    class="flex items-center justify-center gap-1.5 text-xs font-semibold
+                           bg-{{ $accent }}-50 hover:bg-{{ $accent }}-100 text-{{ $accent }}-700 py-2.5 rounded-xl transition-all">
+              🏦 Beli
+            </button>
+          @else
+            <button disabled title="Rekening pembayaran belum diatur admin"
+                    class="flex items-center justify-center gap-1.5 text-xs font-semibold
+                           bg-gray-100 text-gray-400 py-2.5 rounded-xl cursor-not-allowed">
+              Rekening N/A
+            </button>
+          @endif
+
+          @if($contactWaGender1)
+            <a href="https://wa.me/{{ \App\Support\WhatsApp::normalize($contactWaGender1) }}?text={{ urlencode('Halo, saya mau pesan '.$m->nama.' ('.$genderLabel.').') }}"
+               target="_blank"
+               class="flex items-center justify-center gap-1.5 text-xs font-semibold
+                      bg-{{ $accent }}-50 hover:bg-{{ $accent }}-100 text-{{ $accent }}-700 py-2.5 rounded-xl transition-all">
+              <svg class="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+              WhatsApp
+            </a>
+          @else
+            <button disabled title="Kontak pemesanan belum diatur admin"
+                    class="flex items-center justify-center gap-1.5 text-xs font-semibold
+                           bg-gray-100 text-gray-400 py-2.5 rounded-xl cursor-not-allowed">
+              Kontak N/A
+            </button>
+          @endif
+        </div>
         @endif
       </div>
       @empty
@@ -142,7 +183,7 @@
           </a>
           @endif
           @if($contactWhatsapp)
-          <a href="https://wa.me/{{ preg_replace('/[^0-9]/','',$contactWhatsapp) }}" target="_blank"
+          <a href="https://wa.me/{{ \App\Support\WhatsApp::normalize($contactWhatsapp) }}" target="_blank"
              class="flex items-center gap-2 text-xs text-gray-400 hover:text-green-400 transition-colors">
             <svg class="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 24 24">
               <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
@@ -236,6 +277,120 @@
   </svg>
 </button>
 
+{{-- ── Modal: Order Merchandise (form order + rekening pembayaran) ── --}}
+<div id="orderModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-black/60" onclick="closeOrderModal()"></div>
+  <div class="relative bg-white rounded-3xl shadow-2xl max-w-md w-full p-5 sm:p-6 max-h-[90vh] overflow-y-auto">
+    <button type="button" onclick="closeOrderModal()"
+            class="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
+      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+    <h3 class="font-black text-gray-900 text-base mb-1">Form Pemesanan</h3>
+    <p id="omProductLine" class="text-xs text-{{ $accent }}-600 font-semibold mb-4"></p>
+
+    @if($errors->any())
+    <div class="bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
+      @foreach($errors->all() as $e)<p class="text-xs text-red-700">{{ $e }}</p>@endforeach
+    </div>
+    @endif
+
+    <form id="orderForm" method="POST" action="" enctype="multipart/form-data" class="space-y-3">
+      @csrf
+      <input type="hidden" name="merchandise_id" id="orderMerchandiseId">
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1">Nama Pembeli</label>
+        <input type="text" name="nama_pembeli" value="{{ old('nama_pembeli') }}" required
+               class="w-full border border-gray-200 focus:border-{{ $accent }}-500 rounded-xl px-3 py-2.5 text-sm
+                      focus:outline-none focus:ring-2 focus:ring-{{ $accent }}-500/20 transition-all"
+               placeholder="Nama lengkap">
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1">No. WhatsApp</label>
+        <input type="tel" name="hp_pembeli" value="{{ old('hp_pembeli') }}" required
+               class="w-full border border-gray-200 focus:border-{{ $accent }}-500 rounded-xl px-3 py-2.5 text-sm
+                      focus:outline-none focus:ring-2 focus:ring-{{ $accent }}-500/20 transition-all"
+               placeholder="08xxxxxxxxxx">
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1">Jumlah</label>
+        <input type="number" name="jumlah" id="orderJumlah" value="{{ old('jumlah', 1) }}" min="1" required
+               class="w-full border border-gray-200 focus:border-{{ $accent }}-500 rounded-xl px-3 py-2.5 text-sm
+                      focus:outline-none focus:ring-2 focus:ring-{{ $accent }}-500/20 transition-all">
+        <p id="omStockHint" class="text-[10px] text-gray-400 mt-1"></p>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1">Bukti Transfer</label>
+        <input type="file" name="bukti_transfer" accept=".jpg,.jpeg,.png,.gif,.pdf" required
+               data-max-size-kb="2048" data-error-target="omBuktiSizeError"
+               class="w-full border border-gray-200 focus:border-{{ $accent }}-500 rounded-xl px-3 py-2.5 text-sm
+                      focus:outline-none focus:ring-2 focus:ring-{{ $accent }}-500/20 transition-all">
+        <p id="omBuktiSizeError" class="hidden text-red-500 text-xs mt-1">Ukuran file terlalu besar! Maksimal ukuran file adalah 2 MB.</p>
+      </div>
+
+      <div class="border-t border-gray-100 pt-3">
+        <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Rekening Pembayaran</p>
+        <div class="space-y-2">
+          @forelse($merchRekeningsGender as $r)
+          <div class="bg-{{ $accent }}-50 border border-{{ $accent }}-200 rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-xs text-gray-400 font-semibold uppercase tracking-wider">{{ $r->nama_bank }}</p>
+              <p class="text-lg font-black text-gray-900 tracking-wide truncate">{{ $r->nomor_rekening }}</p>
+              <p class="text-xs text-gray-500">a.n. {{ $r->atas_nama }}</p>
+            </div>
+            <button type="button"
+                    onclick="navigator.clipboard.writeText('{{ $r->nomor_rekening }}').then(() => { this.textContent='Disalin!'; setTimeout(() => this.textContent='Salin Nomor', 1500); })"
+                    class="text-xs font-semibold bg-white hover:bg-{{ $accent }}-100 text-{{ $accent }}-700 px-3 py-2 rounded-xl transition-all shrink-0 border border-{{ $accent }}-200">
+              Salin Nomor
+            </button>
+          </div>
+          @empty
+          <p class="text-sm text-gray-400 text-center py-4">Rekening pembayaran belum diatur admin.</p>
+          @endforelse
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between bg-{{ $accent }}-50 border border-{{ $accent }}-200 rounded-xl px-4 py-3">
+        <span class="text-xs font-semibold text-gray-600">Total Pembayaran</span>
+        <span id="omTotalHarga" class="text-lg font-black text-{{ $accent }}-700">Rp0</span>
+      </div>
+
+      <button type="submit"
+              class="w-full bg-{{ $accent }}-600 hover:bg-{{ $accent }}-700 text-white font-bold py-3 rounded-xl text-sm transition-all active:scale-95">
+        Kirim Pesanan
+      </button>
+    </form>
+  </div>
+</div>
+
+{{-- ── Modal: Detail Produk (kerangka statis, diisi via JS dari data-* kartu yang diklik) ── --}}
+<div id="productDetailModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-black/60" onclick="closeProductDetail()"></div>
+  <div class="relative bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+    <button type="button" onclick="closeProductDetail()"
+            class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center transition-colors shadow-sm z-10">
+      <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+    <div class="w-full aspect-square bg-gradient-to-br {{ $isPutra ? 'from-blue-500/10 to-indigo-500/10' : 'from-pink-500/10 to-rose-500/10' }} rounded-t-3xl overflow-hidden flex items-center justify-center">
+      <img id="pdImage" src="" class="hidden w-full h-full object-cover" alt="">
+      <span id="pdImagePlaceholder" class="text-5xl opacity-40">🛍️</span>
+    </div>
+    <div class="p-5 sm:p-6">
+      <h3 id="pdName" class="font-black text-lg text-gray-900 mb-1"></h3>
+      <p id="pdPrice" class="text-{{ $accent }}-600 font-black text-base mb-3"></p>
+      <p id="pdDesc" class="text-sm text-gray-600 leading-relaxed whitespace-pre-line"></p>
+      <p id="pdStockNote" class="text-xs text-gray-400 mt-3"></p>
+    </div>
+  </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -249,5 +404,68 @@ function toggleBackTopMerch() {
 }
 window.addEventListener('scroll', toggleBackTopMerch, {passive: true});
 toggleBackTopMerch();
+
+// ── Modal Detail Produk (diisi dari data-* kartu yang diklik) ──────────
+function openProductDetail(card) {
+  const img = document.getElementById('pdImage');
+  const placeholder = document.getElementById('pdImagePlaceholder');
+  if (card.dataset.img) {
+    img.src = card.dataset.img;
+    img.classList.remove('hidden');
+    placeholder.classList.add('hidden');
+  } else {
+    img.classList.add('hidden');
+    placeholder.classList.remove('hidden');
+  }
+  document.getElementById('pdName').textContent = card.dataset.name;
+  document.getElementById('pdPrice').textContent = card.dataset.price;
+  document.getElementById('pdDesc').textContent = card.dataset.desc || 'Tidak ada deskripsi.';
+  document.getElementById('pdStockNote').textContent = card.dataset.stockNote || '';
+  document.getElementById('productDetailModal').classList.remove('hidden');
+}
+function closeProductDetail() { document.getElementById('productDetailModal').classList.add('hidden'); }
+
+// ── Modal Order Merchandise (form order + rekening, action & batas jumlah
+//    disesuaikan per produk via data-* kartu yang diklik) ─────────────────
+let currentOrderHarga = 0;
+
+function updateOrderTotal() {
+  const jumlah = parseInt(document.getElementById('orderJumlah').value, 10) || 0;
+  const total = currentOrderHarga * jumlah;
+  document.getElementById('omTotalHarga').textContent = 'Rp' + total.toLocaleString('id-ID');
+}
+
+function openOrderModal(card) {
+  document.getElementById('orderForm').action = card.dataset.orderUrl;
+  document.getElementById('orderMerchandiseId').value = card.dataset.id;
+  document.getElementById('omProductLine').textContent = card.dataset.name + ' — ' + card.dataset.price;
+  currentOrderHarga = parseInt(card.dataset.harga, 10) || 0;
+
+  const jumlahInput = document.getElementById('orderJumlah');
+  const stockHint = document.getElementById('omStockHint');
+  if (card.dataset.stok) {
+    jumlahInput.max = card.dataset.stok;
+    stockHint.textContent = 'Sisa stok: ' + card.dataset.stok;
+  } else {
+    jumlahInput.removeAttribute('max');
+    stockHint.textContent = '';
+  }
+
+  updateOrderTotal();
+  document.getElementById('orderModal').classList.remove('hidden');
+}
+function closeOrderModal() { document.getElementById('orderModal').classList.add('hidden'); }
+document.getElementById('orderJumlah').addEventListener('input', updateOrderTotal);
+
+@if($errors->any() && old('merchandise_id'))
+(function () {
+  const card = document.querySelector('.merch-card[data-id="{{ old('merchandise_id') }}"]');
+  if (card) openOrderModal(card);
+})();
+@endif
+
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') { closeProductDetail(); closeOrderModal(); }
+});
 </script>
 @endpush

@@ -30,6 +30,7 @@ class PembayaranController extends Controller
         $allowed   = $this->allowedGenders();
         $role      = session('admin_user.role');
         $rekenings = Rekening::whereIn('gender', $allowed)
+            ->where('konteks', 'pendaftaran')
             ->orderBy('gender')->orderBy('nama_bank')
             ->get();
 
@@ -62,6 +63,7 @@ class PembayaranController extends Controller
             // di-override paksa ke nilai itu — tidak pernah dipercaya mentah-mentah.
             // Hanya superadmin (2 opsi) yang boleh memilih via form.
             'gender'         => count($allowed) === 1 ? $allowed[0] : $request->gender,
+            'konteks'        => 'pendaftaran', // controller ini KHUSUS rekening pendaftaran lomba
             'nama_bank'      => $request->nama_bank,
             'nomor_rekening' => $request->nomor_rekening,
             'atas_nama'      => $request->atas_nama,

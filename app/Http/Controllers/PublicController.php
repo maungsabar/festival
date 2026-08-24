@@ -9,6 +9,9 @@ use App\Models\Sponsor;
 use App\Models\Setting;
 use App\Models\Rekening;
 use App\Models\Merchandise;
+use App\Models\Penjualan;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class PublicController extends Controller
 {
@@ -108,16 +111,132 @@ class PublicController extends Controller
         // Kontak WhatsApp + media sosial KHUSUS kategori ini — dipakai untuk tombol
         // "Pesan via WhatsApp" dan footer (footer-nya reuse markup yang sama persis
         // dengan public/kategori.blade.php, jadi butuh variabel yang sama juga).
-        $contactWaGender1      = Setting::get('contact_whatsapp_1', null, $genderLabel);
+        // Nomor yang dipakai tombol pemesanan mengikuti pilihan admin di menu
+        // Kelola Merchandise > Setup (merchandise_whatsapp_pilihan = '1' atau '2'),
+        // dengan fallback ke slot lain kalau slot pilihan ternyata kosong.
+        $contactWaGender1      = $this->resolveMerchandiseWhatsApp($genderLabel);
         $socialInstagramGender = Setting::get('social_instagram', null, $genderLabel);
         $socialTiktokGender    = Setting::get('social_tiktok', null, $genderLabel);
         $socialYoutubeGender   = Setting::get('social_youtube', null, $genderLabel);
         $socialFacebookGender  = Setting::get('social_facebook', null, $genderLabel);
 
+        $merchHeroImageGender = Setting::get('merchandise_hero_image', null, $genderLabel);
+        $merchJudulGender     = Setting::get('merchandise_judul', null, $genderLabel);
+        $merchTaglineGender   = Setting::get('merchandise_tagline', null, $genderLabel);
+        $merchRekeningsGender = Rekening::where('gender', $genderLabel)
+            ->where('konteks', 'merchandise')
+            ->where('aktif', true)
+            ->orderBy('nama_bank')
+            ->get();
+
         return view('public.merchandise', compact(
             'merchandises', 'genderLabel', 'contactWaGender1',
-            'socialInstagramGender', 'socialTiktokGender', 'socialYoutubeGender', 'socialFacebookGender'
+            'socialInstagramGender', 'socialTiktokGender', 'socialYoutubeGender', 'socialFacebookGender',
+            'merchHeroImageGender', 'merchJudulGender', 'merchTaglineGender', 'merchRekeningsGender'
         ));
+    }
+
+    /**
+     * Order online merchandise dari halaman publik katalog — buat record Penjualan
+     * dan kurangi stok produk sekaligus dalam satu transaction terkunci (lockForUpdate)
+     * supaya dua pembeli yang order barang terakhir bersamaan tidak membuat stok minus.
+     */
+    public function orderMerchandise(Request $request, Merchandise $merchandise)
+    {
+        $request->validate([
+            'nama_pembeli'   => ['required', 'string', 'max:255'],
+            'hp_pembeli'     => ['required', 'string', 'max:20'],
+            'jumlah'         => ['required', 'integer', 'min:1', 'max:9999'],
+            'bukti_transfer' => ['required', 'file', 'mimes:jpg,jpeg,png,gif,pdf', 'max:2048'],
+        ]);
+
+        if (!$merchandise->aktif) {
+            return back()->withErrors(['jumlah' => 'Produk ini sudah tidak tersedia.'])->withInput();
+        }
+
+        $jumlah = (int) $request->jumlah;
+
+        try {
+            $penjualan = DB::transaction(function () use ($request, $merchandise, $jumlah) {
+                $locked = Merchandise::lockForUpdate()->find($merchandise->id);
+
+                if (!$locked || !$locked->aktif) {
+                    throw new \RuntimeException('Produk ini sudah tidak tersedia.');
+                }
+                if ($locked->stok !== null && $locked->stok < $jumlah) {
+                    throw new \RuntimeException('Stok tidak mencukupi. Sisa stok: ' . $locked->stok . '.');
+                }
+
+                $file = $request->file('bukti_transfer');
+                $ext  = $file->extension() ?: $file->getClientOriginalExtension();
+                $name = time() . '_bukti_' . uniqid() . '.' . $ext;
+                $file->move(storage_path('app/public/bukti_transfer_merchandise'), $name);
+
+                $created = Penjualan::create([
+                    'gender'         => $locked->gender,
+                    'merchandise_id' => $locked->id,
+                    'nama_pembeli'   => $request->nama_pembeli,
+                    'hp_pembeli'     => $request->hp_pembeli,
+                    'jumlah'         => $jumlah,
+                    'harga_satuan'   => $locked->harga,
+                    'total_harga'    => $locked->harga * $jumlah,
+                    'bukti_transfer' => $name,
+                    'status'         => 'Menunggu Verifikasi',
+                    'struk_token'    => Str::random(40),
+                ]);
+
+                if ($locked->stok !== null) {
+                    $locked->decrement('stok', $jumlah);
+                }
+
+                return $created;
+            });
+        } catch (\RuntimeException $e) {
+            return back()->withErrors(['jumlah' => $e->getMessage()])->withInput();
+        }
+
+        return redirect()->route('merchandise.order.struk', $penjualan->struk_token)
+            ->with('success', 'Pesanan berhasil dikirim! Admin akan segera memverifikasi pembayaran Anda.');
+    }
+
+    /**
+     * Halaman struk pembelian merchandise — dicari lewat token acak (bukan id
+     * berurutan) supaya struk pembeli lain tidak bisa ditebak lewat URL.
+     */
+    public function strukPenjualan(string $token)
+    {
+        $penjualan = Penjualan::where('struk_token', $token)->with('merchandise')->firstOrFail();
+        $waNomor   = $this->resolveMerchandiseWhatsApp($penjualan->gender);
+        return view('public.struk', compact('penjualan', 'waNomor'));
+    }
+
+    public function unduhStruk(string $token)
+    {
+        $penjualan = Penjualan::where('struk_token', $token)->with('merchandise')->firstOrFail();
+        $fest      = \App\Models\Setting::get('festival_name', 'Festival Sekolah');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('public.struk-pdf', compact('penjualan', 'fest'))
+            ->setPaper('a5', 'portrait');
+
+        $fn = 'struk_' . $penjualan->id . '_' . $penjualan->created_at->format('Ymd_His') . '.pdf';
+        return $pdf->download($fn);
+    }
+
+    /**
+     * Nomor WA merchandise terpilih untuk gender ini — dipakai tombol "Pesan via
+     * WhatsApp" di katalog DAN tombol "Konfirmasi Pembayaran" di halaman struk,
+     * supaya keduanya selalu konsisten mengarah ke nomor yang sama. Slot dipilih
+     * admin di menu Kelola Merchandise > Setup (merchandise_whatsapp_pilihan =
+     * '1' atau '2'), dengan fallback ke slot lain kalau slot pilihan kosong.
+     */
+    private function resolveMerchandiseWhatsApp(string $genderLabel): ?string
+    {
+        $waPilihan = Setting::get('merchandise_whatsapp_pilihan', '1', $genderLabel);
+        $slot1     = Setting::get('contact_whatsapp_1', null, $genderLabel);
+        $slot2     = Setting::get('contact_whatsapp_2', null, $genderLabel);
+        $chosen    = $waPilihan === '2' ? $slot2 : $slot1;
+
+        return $chosen ?: ($waPilihan === '2' ? $slot1 : $slot2);
     }
 
     public function showForm(Request $request)
@@ -145,7 +264,7 @@ class PublicController extends Controller
         // Filtering per-kategori aslinya terjadi di admin (PembayaranController), di sini
         // publik hanya menerima rekening yang aktif. groupBy (bukan keyBy) karena satu
         // kategori bisa punya lebih dari satu rekening (mis. 2 pilihan bank).
-        $rekenings = Rekening::where('aktif', true)->orderBy('nama_bank')->get()->groupBy('gender');
+        $rekenings = Rekening::where('aktif', true)->where('konteks', 'pendaftaran')->orderBy('nama_bank')->get()->groupBy('gender');
 
         // Kalau datang dari tombol "Daftar" di card lomba (?lomba=ID), kunci nama lomba +
         // jenjangnya di form — pendaftar tidak perlu memilih lagi dari daftar. Divalidasi

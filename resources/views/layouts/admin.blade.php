@@ -22,7 +22,14 @@
             ['route' => 'admin.lomba.index',               'label' => 'Kelola Lomba',       'icon' => 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z', 'match' => 'admin.lomba.*'],
             ['route' => 'admin.sponsor.index',             'label' => 'Kelola Sponsor',     'icon' => 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', 'match' => 'admin.sponsor.*'],
             ['route' => 'admin.pembayaran.index',          'label' => 'Kelola Pembayaran',  'icon' => 'M3 10h18M6 15h2m3 0h5M4 6h16a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V7a1 1 0 011-1z', 'match' => 'admin.pembayaran.*'],
-            ['route' => 'admin.merchandise.index',         'label' => 'Kelola Merchandise', 'icon' => 'M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6A2.25 2.25 0 016 3.75h1.5m9 0h-9', 'match' => 'admin.merchandise.*'],
+            [
+                'label' => 'Kelola Merchandise', 'icon' => 'M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6A2.25 2.25 0 016 3.75h1.5m9 0h-9', 'match' => 'admin.merchandise.*',
+                'children' => [
+                    ['route' => 'admin.merchandise.index', 'label' => 'Tambah Produk',  'match' => ['admin.merchandise.index', 'admin.merchandise.create', 'admin.merchandise.edit']],
+                    ['route' => 'admin.merchandise.setup', 'label' => 'Setup',          'match' => ['admin.merchandise.setup*']],
+                    ['route' => 'admin.penjualan.index',   'label' => 'Data Penjualan', 'match' => ['admin.penjualan.*']],
+                ],
+            ],
             ['route' => 'admin.settings',                  'label' => 'Pengaturan',         'icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z', 'match' => 'admin.settings*'],
             ['route' => 'admin.users.index',               'label' => 'Kelola User',        'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'match' => 'admin.users.*'],
         ];
@@ -33,7 +40,14 @@
             ['route' => 'admin.lomba.index',     'label' => 'Kelola Lomba',   'icon' => 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z', 'match' => 'admin.lomba.*'],
             ['route' => 'admin.sponsor.index',   'label' => 'Kelola Sponsor', 'icon' => 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', 'match' => 'admin.sponsor.*'],
             ['route' => 'admin.pembayaran.index','label' => 'Kelola Pembayaran', 'icon' => 'M3 10h18M6 15h2m3 0h5M4 6h16a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V7a1 1 0 011-1z', 'match' => 'admin.pembayaran.*'],
-            ['route' => 'admin.merchandise.index','label' => 'Kelola Merchandise', 'icon' => 'M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6A2.25 2.25 0 016 3.75h1.5m9 0h-9', 'match' => 'admin.merchandise.*'],
+            [
+                'label' => 'Kelola Merchandise', 'icon' => 'M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6A2.25 2.25 0 016 3.75h1.5m9 0h-9', 'match' => 'admin.merchandise.*',
+                'children' => [
+                    ['route' => 'admin.merchandise.index', 'label' => 'Tambah Produk',  'match' => ['admin.merchandise.index', 'admin.merchandise.create', 'admin.merchandise.edit']],
+                    ['route' => 'admin.merchandise.setup', 'label' => 'Setup',          'match' => ['admin.merchandise.setup*']],
+                    ['route' => 'admin.penjualan.index',   'label' => 'Data Penjualan', 'match' => ['admin.penjualan.*']],
+                ],
+            ],
             ['route' => 'admin.settings',        'label' => 'Pengaturan',     'icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z', 'match' => 'admin.settings*'],
         ];
     }
@@ -109,28 +123,62 @@
       <p class="text-[10px] text-white/35 uppercase tracking-widest px-3 pb-2 font-semibold">Menu Utama</p>
 
       @foreach($navItems as $item)
-      @php
-        $isActive = false;
-        if (!empty($item['active_gender'])) {
-          $isActive = request()->routeIs('admin.pendaftar.*') && request('gender') === $item['active_gender'];
-        } elseif (isset($item['params']) && empty($item['params']) && !empty($item['match']) && str_contains($item['match'], 'pendaftar')) {
-          $isActive = request()->routeIs('admin.pendaftar.*') && !request('gender');
-        } else {
-          $isActive = !empty($item['match']) && request()->routeIs($item['match']);
-        }
-        $href = isset($item['params']) ? route($item['route'], $item['params']) : route($item['route']);
-      @endphp
-      <a href="{{ $href }}"
-         class="nav-link {{ $isActive ? 'active' : 'hover:bg-white/10' }}
-                flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/{{ $isActive ? '100' : '70' }} font-{{ $isActive ? 'semibold' : 'medium' }}">
-        <svg class="w-[17px] h-[17px] shrink-0 opacity-{{ $isActive ? '100' : '75' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="{{ $isActive ? '2.2' : '1.8' }}" d="{{ $item['icon'] }}"/>
-        </svg>
-        <span class="truncate">{{ $item['label'] }}</span>
-        @if($isActive)
-          <span class="ml-auto w-1.5 h-1.5 rounded-full bg-white shrink-0"></span>
-        @endif
-      </a>
+      @if(isset($item['children']))
+        @php
+          $childActive = collect($item['children'])->contains(fn ($c) => request()->routeIs(...(array) $c['match']));
+          $groupId = 'navgroup-' . \Illuminate\Support\Str::slug($item['label']);
+        @endphp
+        <button type="button" onclick="document.getElementById('{{ $groupId }}').classList.toggle('hidden'); this.querySelector('.chev').classList.toggle('rotate-90')"
+                class="nav-link w-full transition-colors
+                       {{ $childActive ? 'bg-emerald-500/15 ring-1 ring-inset ring-emerald-400/30 text-emerald-200' : 'text-white/70 hover:bg-white/10' }}
+                       flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-{{ $childActive ? 'semibold' : 'medium' }}">
+          <svg class="w-[17px] h-[17px] shrink-0 opacity-{{ $childActive ? '100' : '75' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="{{ $childActive ? '2.2' : '1.8' }}" d="{{ $item['icon'] }}"/>
+          </svg>
+          <span class="truncate">{{ $item['label'] }}</span>
+          <svg class="chev ml-auto w-3.5 h-3.5 shrink-0 transition-transform {{ $childActive ? 'rotate-90 opacity-90' : 'opacity-60' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+        <div id="{{ $groupId }}" class="{{ $childActive ? '' : 'hidden' }} pl-4 space-y-0.5 mt-0.5 mb-1">
+          @foreach($item['children'] as $child)
+          @php $childIsActive = request()->routeIs(...(array) $child['match']); @endphp
+          <a href="{{ route($child['route']) }}"
+             class="nav-link flex items-center gap-2.5 pl-4 pr-3 py-2 rounded-xl text-sm font-{{ $childIsActive ? 'semibold' : 'medium' }} border border-l-2 transition-colors
+                    {{ $childIsActive
+                        ? 'bg-emerald-500/15 text-emerald-200 border-emerald-400'
+                        : 'text-white/55 border-white/10 hover:bg-emerald-500/10 hover:text-emerald-100 hover:border-emerald-400/40' }}">
+            <span class="truncate">{{ $child['label'] }}</span>
+            @if($childIsActive)
+              <span class="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
+            @endif
+          </a>
+          @endforeach
+        </div>
+      @else
+        @php
+          $isActive = false;
+          if (!empty($item['active_gender'])) {
+            $isActive = request()->routeIs('admin.pendaftar.*') && request('gender') === $item['active_gender'];
+          } elseif (isset($item['params']) && empty($item['params']) && !empty($item['match']) && str_contains($item['match'], 'pendaftar')) {
+            $isActive = request()->routeIs('admin.pendaftar.*') && !request('gender');
+          } else {
+            $isActive = !empty($item['match']) && request()->routeIs($item['match']);
+          }
+          $href = isset($item['params']) ? route($item['route'], $item['params']) : route($item['route']);
+        @endphp
+        <a href="{{ $href }}"
+           class="nav-link {{ $isActive ? 'active' : 'hover:bg-white/10' }}
+                  flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/{{ $isActive ? '100' : '70' }} font-{{ $isActive ? 'semibold' : 'medium' }}">
+          <svg class="w-[17px] h-[17px] shrink-0 opacity-{{ $isActive ? '100' : '75' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="{{ $isActive ? '2.2' : '1.8' }}" d="{{ $item['icon'] }}"/>
+          </svg>
+          <span class="truncate">{{ $item['label'] }}</span>
+          @if($isActive)
+            <span class="ml-auto w-1.5 h-1.5 rounded-full bg-white shrink-0"></span>
+          @endif
+        </a>
+      @endif
       @endforeach
 
       <div class="pt-3 pb-1">

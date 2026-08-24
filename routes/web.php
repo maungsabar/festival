@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PublicController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PendaftarController;
+use App\Http\Controllers\PenjualanController;
 use App\Http\Controllers\LombaController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
@@ -15,6 +16,9 @@ Route::get('/lomba/{gender}', [PublicController::class, 'kategori'])
 Route::get('/lomba/{gender}/merchandise', [PublicController::class, 'merchandise'])
      ->where('gender', 'putra|putri')
      ->name('merchandise.index');
+Route::post('/merchandise/{merchandise}/order', [PublicController::class, 'orderMerchandise'])->name('merchandise.order');
+Route::get('/pesanan/{token}/struk',       [PublicController::class, 'strukPenjualan'])->name('merchandise.order.struk');
+Route::get('/pesanan/{token}/struk/unduh', [PublicController::class, 'unduhStruk'])->name('merchandise.order.struk.download');
 Route::get('/daftar',    [PublicController::class, 'showForm'])->name('daftar.form');
 Route::post('/daftar',   [PublicController::class, 'store'])->name('daftar.store');
 Route::get('/daftar/sukses', [PublicController::class, 'sukses'])->name('daftar.sukses');
@@ -34,7 +38,7 @@ Route::middleware(['auth.admin', 'gender.access'])->prefix('admin')->name('admin
     Route::patch('/pendaftar/{pendaftar}/verifikasi',[PendaftarController::class, 'verifikasi'])->name('pendaftar.verifikasi');
     Route::delete('/pendaftar/{pendaftar}',          [PendaftarController::class, 'destroy'])->name('pendaftar.destroy');
     Route::get('/uploads/{folder}/{filename}',       [PendaftarController::class, 'serveFile'])->name('uploads.serve')
-         ->where('folder','kartu_siswa|bukti_pembayaran');
+         ->where('folder','kartu_siswa|bukti_pembayaran|bukti_transfer_merchandise');
 
     Route::get('/lomba',               [LombaController::class, 'index'])->name('lomba.index');
     Route::get('/lomba/create',        [LombaController::class, 'create'])->name('lomba.create');
@@ -79,8 +83,25 @@ Route::middleware(['auth.admin', 'gender.access'])->prefix('admin')->name('admin
     Route::get('/merchandise',                    [\App\Http\Controllers\MerchandiseController::class, 'index'])->name('merchandise.index');
     Route::get('/merchandise/create',             [\App\Http\Controllers\MerchandiseController::class, 'create'])->name('merchandise.create');
     Route::post('/merchandise',                   [\App\Http\Controllers\MerchandiseController::class, 'store'])->name('merchandise.store');
+
+    // Setup Merchandise (header katalog publik + rekening khusus merchandise, per gender).
+    // WAJIB didaftarkan SEBELUM route '/merchandise/{merchandise}' di bawah — kalau tidak,
+    // '/merchandise/setup' akan ketangkap duluan oleh wildcard {merchandise} (Laravel
+    // mencocokkan route berurutan), bukan oleh handler setup() yang dimaksud.
+    Route::get('/merchandise/setup',                 [\App\Http\Controllers\MerchandiseController::class, 'setup'])->name('merchandise.setup');
+    Route::put('/merchandise/setup',                  [\App\Http\Controllers\MerchandiseController::class, 'updateSetup'])->name('merchandise.setup.update');
+    Route::post('/merchandise/rekening',              [\App\Http\Controllers\MerchandiseController::class, 'rekeningStore'])->name('merchandise.rekening.store');
+    Route::put('/merchandise/rekening/{rekening}',    [\App\Http\Controllers\MerchandiseController::class, 'rekeningUpdate'])->name('merchandise.rekening.update');
+    Route::delete('/merchandise/rekening/{rekening}', [\App\Http\Controllers\MerchandiseController::class, 'rekeningDestroy'])->name('merchandise.rekening.destroy');
+
     Route::get('/merchandise/{merchandise}/edit', [\App\Http\Controllers\MerchandiseController::class, 'edit'])->name('merchandise.edit');
     Route::put('/merchandise/{merchandise}',      [\App\Http\Controllers\MerchandiseController::class, 'update'])->name('merchandise.update');
     Route::delete('/merchandise/{merchandise}',   [\App\Http\Controllers\MerchandiseController::class, 'destroy'])->name('merchandise.destroy');
+
+    // Data Penjualan (order online merchandise; ter-scope gender via gender.access middleware)
+    Route::get('/penjualan',                     [PenjualanController::class, 'index'])->name('penjualan.index');
+    Route::get('/penjualan/{penjualan}',          [PenjualanController::class, 'show'])->name('penjualan.show');
+    Route::patch('/penjualan/{penjualan}/status', [PenjualanController::class, 'updateStatus'])->name('penjualan.status');
+    Route::delete('/penjualan/{penjualan}',       [PenjualanController::class, 'destroy'])->name('penjualan.destroy');
 });
 

@@ -88,7 +88,7 @@ class PendaftarController extends Controller
     public function serveFile(string $folder, string $filename)
     {
         // SECURITY: Whitelist allowed folders only
-        $allowedFolders = ['kartu_siswa', 'bukti_pembayaran'];
+        $allowedFolders = ['kartu_siswa', 'bukti_pembayaran', 'bukti_transfer_merchandise'];
         if (!in_array($folder, $allowedFolders, true)) abort(403);
 
         // SECURITY: Strip any path traversal sequences (e.g. ../../)
