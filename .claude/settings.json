@@ -89,7 +89,15 @@
       "Bash(rm -f /tmp/merch.html /tmp/merch_check.html /tmp/order_resp.html /tmp/order_headers.txt /tmp/struk.html /tmp/struk_download.pdf /tmp/dl_headers.txt /tmp/cj.txt /tmp/serve8.log)",
       "Bash(php -l app/Support/WhatsApp.php)",
       "Bash(pkill -f \"artisan serve --port=8987\")",
-      "Bash(rm -f /tmp/merch.html /tmp/order_headers.txt /tmp/struk.html /tmp/cj.txt /tmp/serve9.log)"
+      "Bash(rm -f /tmp/merch.html /tmp/order_headers.txt /tmp/struk.html /tmp/cj.txt /tmp/serve9.log)",
+      "Bash(curl -s -b /tmp/cj.txt \"http://127.0.0.1:8989/admin/merchandise/setup\" -o /tmp/setup2.html)",
+      "Bash(curl -s -b /tmp/cj.txt \"http://127.0.0.1:8989/admin/pembayaran\" -o /tmp/pemb2.html)",
+      "Bash(curl -s \"http://127.0.0.1:8989/lomba/putra/merchandise\" -o /tmp/pub.html -w \"%{http_code}\\\\n\")",
+      "Bash(pkill -f \"artisan serve --port=8989\")",
+      "Bash(rm -f /tmp/pemb.html /tmp/pemb_create.html /tmp/store_headers.txt /tmp/setup.html /tmp/setup2.html /tmp/setup3.html /tmp/pemb2.html /tmp/pub.html /tmp/attach_headers.txt /tmp/cj.txt /tmp/serve10.log)"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
     ]
   }
 }

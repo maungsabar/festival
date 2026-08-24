@@ -35,7 +35,12 @@
         {{ $r->gender==='Putra' ? '♂' : '♀' }}
       </div>
       <div class="flex-1 min-w-0">
-        <p class="font-bold text-gray-900 text-sm truncate">{{ $r->nama_bank }} — {{ $r->nomor_rekening }}</p>
+        <p class="font-bold text-gray-900 text-sm truncate">
+          {{ $r->nama_bank }} — {{ $r->nomor_rekening }}
+          @if($r->untuk_merchandise)
+          <span class="ml-1 text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full align-middle">Juga di Merchandise</span>
+          @endif
+        </p>
         <p class="text-xs text-gray-400 truncate">a.n. {{ $r->atas_nama }}</p>
       </div>
       <div class="flex items-center gap-1 shrink-0">
@@ -47,9 +52,9 @@
       <a href="{{ route('admin.pembayaran.edit', $r) }}"
          class="flex-1 text-center text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 py-2 rounded-lg font-medium transition-all">Edit</a>
       <form method="POST" action="{{ route('admin.pembayaran.destroy', $r) }}" class="flex-1"
-            data-confirm='Hapus rekening {{ addslashes($r->nama_bank) }}?'>
+            data-confirm='{{ $r->untuk_merchandise ? "Lepas rekening ".addslashes($r->nama_bank)." dari daftar pendaftaran? (rekening tetap ada di Setup Merchandise)" : "Hapus rekening ".addslashes($r->nama_bank)."?" }}'>
         @csrf @method('DELETE')
-        <button class="w-full text-xs bg-red-50 hover:bg-red-100 text-red-600 py-2 rounded-lg transition-all">Hapus</button>
+        <button class="w-full text-xs bg-red-50 hover:bg-red-100 text-red-600 py-2 rounded-lg transition-all">{{ $r->untuk_merchandise ? 'Lepas' : 'Hapus' }}</button>
       </form>
     </div>
   </div>
@@ -85,7 +90,14 @@
             </span>
           </td>
           @endif
-          <td class="px-4 py-3"><p class="font-semibold text-sm text-gray-900">{{ $r->nama_bank }}</p></td>
+          <td class="px-4 py-3">
+            <p class="font-semibold text-sm text-gray-900">
+              {{ $r->nama_bank }}
+              @if($r->untuk_merchandise)
+              <span class="ml-1 text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full align-middle">Juga di Merchandise</span>
+              @endif
+            </p>
+          </td>
           <td class="px-4 py-3"><p class="text-sm text-gray-700 font-mono tracking-wide">{{ $r->nomor_rekening }}</p></td>
           <td class="px-4 py-3"><p class="text-sm text-gray-600">{{ $r->atas_nama }}</p></td>
           <td class="px-4 py-3">
@@ -99,9 +111,9 @@
               <a href="{{ route('admin.pembayaran.edit', $r) }}"
                  class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-2.5 py-1.5 rounded-lg transition-all font-medium">Edit</a>
               <form method="POST" action="{{ route('admin.pembayaran.destroy', $r) }}"
-                    data-confirm='Hapus rekening {{ addslashes($r->nama_bank) }}?'>
+                    data-confirm='{{ $r->untuk_merchandise ? "Lepas rekening ".addslashes($r->nama_bank)." dari daftar pendaftaran? (rekening tetap ada di Setup Merchandise)" : "Hapus rekening ".addslashes($r->nama_bank)."?" }}'>
                 @csrf @method('DELETE')
-                <button class="text-xs bg-red-50 hover:bg-red-100 text-red-600 px-2.5 py-1.5 rounded-lg transition-all">Hapus</button>
+                <button class="text-xs bg-red-50 hover:bg-red-100 text-red-600 px-2.5 py-1.5 rounded-lg transition-all">{{ $r->untuk_merchandise ? 'Lepas' : 'Hapus' }}</button>
               </form>
             </div>
           </td>

@@ -124,7 +124,7 @@ class PublicController extends Controller
         $merchJudulGender     = Setting::get('merchandise_judul', null, $genderLabel);
         $merchTaglineGender   = Setting::get('merchandise_tagline', null, $genderLabel);
         $merchRekeningsGender = Rekening::where('gender', $genderLabel)
-            ->where('konteks', 'merchandise')
+            ->where('untuk_merchandise', true)
             ->where('aktif', true)
             ->orderBy('nama_bank')
             ->get();
@@ -264,7 +264,7 @@ class PublicController extends Controller
         // Filtering per-kategori aslinya terjadi di admin (PembayaranController), di sini
         // publik hanya menerima rekening yang aktif. groupBy (bukan keyBy) karena satu
         // kategori bisa punya lebih dari satu rekening (mis. 2 pilihan bank).
-        $rekenings = Rekening::where('aktif', true)->where('konteks', 'pendaftaran')->orderBy('nama_bank')->get()->groupBy('gender');
+        $rekenings = Rekening::where('aktif', true)->where('untuk_pendaftaran', true)->orderBy('nama_bank')->get()->groupBy('gender');
 
         // Kalau datang dari tombol "Daftar" di card lomba (?lomba=ID), kunci nama lomba +
         // jenjangnya di form — pendaftar tidak perlu memilih lagi dari daftar. Divalidasi

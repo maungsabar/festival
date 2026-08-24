@@ -178,11 +178,20 @@ class MerchandiseController extends Controller
         ];
 
         $rekenings = Rekening::where('gender', $gender)
-            ->where('konteks', 'merchandise')
+            ->where('untuk_merchandise', true)
             ->orderBy('nama_bank')
             ->get();
 
-        return view('admin.merchandise.setup', compact('settings', 'gender', 'allowed', 'waRef', 'rekenings'));
+        // Rekening yang sudah ada di Kelola Pembayaran (untuk_pendaftaran) tapi BELUM
+        // dipakai di merchandise — ditawarkan sebagai pilihan cepat "pakai yang sudah
+        // ada" supaya admin tidak perlu input ulang nomor rekening yang sama.
+        $rekeningsPilihan = Rekening::where('gender', $gender)
+            ->where('untuk_pendaftaran', true)
+            ->where('untuk_merchandise', false)
+            ->orderBy('nama_bank')
+            ->get();
+
+        return view('admin.merchandise.setup', compact('settings', 'gender', 'allowed', 'waRef', 'rekenings', 'rekeningsPilihan'));
     }
 
     public function updateSetup(Request $request)
@@ -243,16 +252,30 @@ class MerchandiseController extends Controller
         ]);
 
         Rekening::create([
-            'gender'         => count($allowed) === 1 ? $allowed[0] : $request->gender,
-            'konteks'        => 'merchandise',
-            'nama_bank'      => $request->nama_bank,
-            'nomor_rekening' => $request->nomor_rekening,
-            'atas_nama'      => $request->atas_nama,
-            'aktif'          => $request->boolean('aktif', true),
+            'gender'            => count($allowed) === 1 ? $allowed[0] : $request->gender,
+            'untuk_pendaftaran' => false,
+            'untuk_merchandise' => true,
+            'nama_bank'         => $request->nama_bank,
+            'nomor_rekening'    => $request->nomor_rekening,
+            'atas_nama'         => $request->atas_nama,
+            'aktif'             => $request->boolean('aktif', true),
         ]);
 
         return redirect()->route('admin.merchandise.setup', ['gender' => strtolower(count($allowed) === 1 ? $allowed[0] : $request->gender)])
             ->with('success', 'Rekening merchandise ditambahkan.');
+    }
+
+    /**
+     * "Pilih dari Kelola Pembayaran" — pakai rekening yang SUDAH ADA (bukan input
+     * ulang), cukup nyalakan flag untuk_merchandise pada baris yang sama. Tidak ada
+     * duplikasi data: kalau nomor rekening diubah nanti, otomatis ikut berubah di
+     * kedua tempat karena sumbernya satu baris yang sama.
+     */
+    public function rekeningAttach(Rekening $rekening)
+    {
+        $rekening->update(['untuk_merchandise' => true]);
+        return redirect()->route('admin.merchandise.setup', ['gender' => strtolower($rekening->gender)])
+            ->with('success', 'Rekening "' . $rekening->nama_bank . '" sekarang dipakai untuk merchandise.');
     }
 
     public function rekeningUpdate(Request $request, Rekening $rekening)
@@ -282,6 +305,15 @@ class MerchandiseController extends Controller
     public function rekeningDestroy(Rekening $rekening)
     {
         $gender = $rekening->gender;
+
+        // Kalau rekening ini JUGA dipakai di Kelola Pembayaran, jangan hapus baris-nya
+        // (akan ikut hilang dari form pendaftaran) — cukup lepas dari konteks merchandise.
+        if ($rekening->untuk_pendaftaran) {
+            $rekening->update(['untuk_merchandise' => false]);
+            return redirect()->route('admin.merchandise.setup', ['gender' => strtolower($gender)])
+                ->with('success', 'Rekening dilepas dari daftar merchandise (masih dipakai di Kelola Pembayaran).');
+        }
+
         $rekening->delete();
         return redirect()->route('admin.merchandise.setup', ['gender' => strtolower($gender)])
             ->with('success', 'Rekening merchandise dihapus.');

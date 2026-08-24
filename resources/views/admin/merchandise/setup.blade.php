@@ -174,23 +174,28 @@
       Rekening Pembayaran Merchandise
     </h2>
     <p class="text-[11px] text-gray-400 mb-4">
-      Rekening ini KHUSUS untuk pembelian merchandise — terpisah dari rekening pendaftaran lomba di menu Kelola Pembayaran.
+      Boleh rekening yang sama dengan pendaftaran lomba, atau rekening baru khusus merchandise — tinggal pilih dari Kelola Pembayaran di bawah, atau tambahkan baru.
     </p>
 
     <div class="space-y-2.5 mb-5">
       @forelse($rekenings as $r)
       <div id="rekening-view-{{ $r->id }}" class="flex items-center gap-3 border border-gray-100 bg-gray-50 rounded-xl px-4 py-3 {{ !$r->aktif ? 'opacity-60' : '' }}">
         <div class="flex-1 min-w-0">
-          <p class="font-semibold text-sm text-gray-900 truncate">{{ $r->nama_bank }} — <span class="font-mono">{{ $r->nomor_rekening }}</span></p>
+          <p class="font-semibold text-sm text-gray-900 truncate">
+            {{ $r->nama_bank }} — <span class="font-mono">{{ $r->nomor_rekening }}</span>
+            @if($r->untuk_pendaftaran)
+            <span class="ml-1 text-[9px] font-bold bg-{{ $accent }}-100 text-{{ $accent }}-700 px-1.5 py-0.5 rounded-full align-middle">Dipakai juga di Pendaftaran</span>
+            @endif
+          </p>
           <p class="text-xs text-gray-400 truncate">a.n. {{ $r->atas_nama }} · {{ $r->aktif ? 'Aktif' : 'Nonaktif' }}</p>
         </div>
         <button type="button"
                 onclick="document.getElementById('rekening-view-{{ $r->id }}').classList.add('hidden'); document.getElementById('rekening-edit-{{ $r->id }}').classList.remove('hidden');"
                 class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg transition-all font-medium shrink-0">Edit</button>
         <form method="POST" action="{{ route('admin.merchandise.rekening.destroy', $r) }}" class="shrink-0"
-              data-confirm='Hapus rekening merchandise {{ addslashes($r->nama_bank) }}?'>
+              data-confirm='{{ $r->untuk_pendaftaran ? "Lepas rekening ".addslashes($r->nama_bank)." dari daftar merchandise? (rekening tetap ada di Kelola Pembayaran)" : "Hapus rekening merchandise ".addslashes($r->nama_bank)."?" }}'>
           @csrf @method('DELETE')
-          <button class="text-xs bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg transition-all font-medium">Hapus</button>
+          <button class="text-xs bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg transition-all font-medium">{{ $r->untuk_pendaftaran ? 'Lepas' : 'Hapus' }}</button>
         </form>
       </div>
 
@@ -225,6 +230,31 @@
       <div class="border border-dashed border-gray-200 rounded-xl p-6 text-center text-sm text-gray-400">
         Belum ada rekening merchandise untuk kategori {{ $gender }}.
       </div>
+      @endforelse
+    </div>
+
+    {{-- ── Pilih dari Kelola Pembayaran ── --}}
+    <div class="border-t border-gray-100 pt-4 mb-5">
+      <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Pilih dari Kelola Pembayaran</p>
+      <p class="text-[11px] text-gray-400 mb-3">Pakai nomor rekening yang sudah ada di menu Kelola Pembayaran, tanpa input ulang.</p>
+      @forelse($rekeningsPilihan as $r)
+      <div class="flex items-center gap-3 border border-dashed border-gray-200 rounded-xl px-4 py-3 mb-2">
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-sm text-gray-900 truncate">{{ $r->nama_bank }} — <span class="font-mono">{{ $r->nomor_rekening }}</span></p>
+          <p class="text-xs text-gray-400 truncate">a.n. {{ $r->atas_nama }}</p>
+        </div>
+        <form method="POST" action="{{ route('admin.merchandise.rekening.attach', $r) }}" class="shrink-0">
+          @csrf @method('PATCH')
+          <button class="text-xs bg-{{ $accent }}-50 hover:bg-{{ $accent }}-100 text-{{ $accent }}-700 px-3 py-1.5 rounded-lg transition-all font-medium">
+            + Gunakan untuk Merchandise
+          </button>
+        </form>
+      </div>
+      @empty
+      <p class="text-xs text-gray-400 italic">
+        Semua rekening dari Kelola Pembayaran sudah dipakai di merchandise, atau belum ada rekening pendaftaran untuk kategori {{ $gender }}.
+        <a href="{{ route('admin.pembayaran.index') }}" class="text-{{ $accent }}-600 hover:underline font-semibold not-italic">Buka Kelola Pembayaran</a>
+      </p>
       @endforelse
     </div>
 

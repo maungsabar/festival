@@ -90,9 +90,10 @@ Route::middleware(['auth.admin', 'gender.access'])->prefix('admin')->name('admin
     // mencocokkan route berurutan), bukan oleh handler setup() yang dimaksud.
     Route::get('/merchandise/setup',                 [\App\Http\Controllers\MerchandiseController::class, 'setup'])->name('merchandise.setup');
     Route::put('/merchandise/setup',                  [\App\Http\Controllers\MerchandiseController::class, 'updateSetup'])->name('merchandise.setup.update');
-    Route::post('/merchandise/rekening',              [\App\Http\Controllers\MerchandiseController::class, 'rekeningStore'])->name('merchandise.rekening.store');
-    Route::put('/merchandise/rekening/{rekening}',    [\App\Http\Controllers\MerchandiseController::class, 'rekeningUpdate'])->name('merchandise.rekening.update');
-    Route::delete('/merchandise/rekening/{rekening}', [\App\Http\Controllers\MerchandiseController::class, 'rekeningDestroy'])->name('merchandise.rekening.destroy');
+    Route::post('/merchandise/rekening',                     [\App\Http\Controllers\MerchandiseController::class, 'rekeningStore'])->name('merchandise.rekening.store');
+    Route::patch('/merchandise/rekening/{rekening}/attach',   [\App\Http\Controllers\MerchandiseController::class, 'rekeningAttach'])->name('merchandise.rekening.attach');
+    Route::put('/merchandise/rekening/{rekening}',           [\App\Http\Controllers\MerchandiseController::class, 'rekeningUpdate'])->name('merchandise.rekening.update');
+    Route::delete('/merchandise/rekening/{rekening}',        [\App\Http\Controllers\MerchandiseController::class, 'rekeningDestroy'])->name('merchandise.rekening.destroy');
 
     Route::get('/merchandise/{merchandise}/edit', [\App\Http\Controllers\MerchandiseController::class, 'edit'])->name('merchandise.edit');
     Route::put('/merchandise/{merchandise}',      [\App\Http\Controllers\MerchandiseController::class, 'update'])->name('merchandise.update');

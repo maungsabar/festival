@@ -30,7 +30,7 @@ class PembayaranController extends Controller
         $allowed   = $this->allowedGenders();
         $role      = session('admin_user.role');
         $rekenings = Rekening::whereIn('gender', $allowed)
-            ->where('konteks', 'pendaftaran')
+            ->where('untuk_pendaftaran', true)
             ->orderBy('gender')->orderBy('nama_bank')
             ->get();
 
@@ -62,12 +62,13 @@ class PembayaranController extends Controller
             // (allowedGenders() sudah dibatasi ke satu nilai), jadi request->gender
             // di-override paksa ke nilai itu — tidak pernah dipercaya mentah-mentah.
             // Hanya superadmin (2 opsi) yang boleh memilih via form.
-            'gender'         => count($allowed) === 1 ? $allowed[0] : $request->gender,
-            'konteks'        => 'pendaftaran', // controller ini KHUSUS rekening pendaftaran lomba
-            'nama_bank'      => $request->nama_bank,
-            'nomor_rekening' => $request->nomor_rekening,
-            'atas_nama'      => $request->atas_nama,
-            'aktif'          => $request->boolean('aktif', true),
+            'gender'            => count($allowed) === 1 ? $allowed[0] : $request->gender,
+            'untuk_pendaftaran' => true,
+            'untuk_merchandise' => false,
+            'nama_bank'         => $request->nama_bank,
+            'nomor_rekening'    => $request->nomor_rekening,
+            'atas_nama'         => $request->atas_nama,
+            'aktif'             => $request->boolean('aktif', true),
         ]);
 
         return redirect()->route('admin.pembayaran.index')->with('success', 'Rekening pembayaran ditambahkan.');
@@ -108,6 +109,14 @@ class PembayaranController extends Controller
 
     public function destroy(Rekening $rekening)
     {
+        // Kalau rekening ini JUGA dipakai di Setup Merchandise, jangan hapus baris-nya
+        // (akan ikut hilang dari merchandise) — cukup lepas dari konteks pendaftaran.
+        // Baru dihapus permanen kalau memang tidak dipakai di tempat lain.
+        if ($rekening->untuk_merchandise) {
+            $rekening->update(['untuk_pendaftaran' => false]);
+            return redirect()->route('admin.pembayaran.index')->with('success', 'Rekening dilepas dari daftar pendaftaran (masih dipakai di Merchandise).');
+        }
+
         $rekening->delete();
         return redirect()->route('admin.pembayaran.index')->with('success', 'Rekening pembayaran dihapus.');
     }

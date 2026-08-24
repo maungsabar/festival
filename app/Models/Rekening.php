@@ -6,12 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Rekening extends Model
 {
-    protected $fillable = ['gender', 'konteks', 'nama_bank', 'nomor_rekening', 'atas_nama', 'aktif'];
+    protected $fillable = ['gender', 'nama_bank', 'nomor_rekening', 'atas_nama', 'aktif', 'untuk_pendaftaran', 'untuk_merchandise'];
 
     protected function casts(): array
     {
         return [
-            'aktif' => 'boolean',
+            'aktif'             => 'boolean',
+            'untuk_pendaftaran' => 'boolean',
+            'untuk_merchandise' => 'boolean',
         ];
     }
 }
