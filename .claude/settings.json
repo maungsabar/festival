@@ -94,7 +94,14 @@
       "Bash(curl -s -b /tmp/cj.txt \"http://127.0.0.1:8989/admin/pembayaran\" -o /tmp/pemb2.html)",
       "Bash(curl -s \"http://127.0.0.1:8989/lomba/putra/merchandise\" -o /tmp/pub.html -w \"%{http_code}\\\\n\")",
       "Bash(pkill -f \"artisan serve --port=8989\")",
-      "Bash(rm -f /tmp/pemb.html /tmp/pemb_create.html /tmp/store_headers.txt /tmp/setup.html /tmp/setup2.html /tmp/setup3.html /tmp/pemb2.html /tmp/pub.html /tmp/attach_headers.txt /tmp/cj.txt /tmp/serve10.log)"
+      "Bash(rm -f /tmp/pemb.html /tmp/pemb_create.html /tmp/store_headers.txt /tmp/setup.html /tmp/setup2.html /tmp/setup3.html /tmp/pemb2.html /tmp/pub.html /tmp/attach_headers.txt /tmp/cj.txt /tmp/serve10.log)",
+      "Bash(php -l app/Http/Controllers/UserController.php)",
+      "Bash(pkill -f \"artisan serve --port=8991\")",
+      "Bash(rm -f /tmp/edit.html /tmp/edit2.html /tmp/edit3.html /tmp/update_resp.html /tmp/update_headers.txt /tmp/reject_resp.html /tmp/reject_headers.txt /tmp/ok_headers.txt /tmp/cj.txt /tmp/serve11.log)",
+      "Bash(awk '$1>1')",
+      "Bash(sed -n '555,576p' /tmp/tenis.html *)",
+      "Bash(pkill -f \"artisan serve --port=8993\")",
+      "Bash(rm -f /tmp/tenis.html /tmp/tenis2.html /tmp/submit_resp.html /tmp/submit_headers.txt /tmp/final_headers.txt /tmp/cj.txt /tmp/cj2.txt /tmp/serve12.log /tmp/serve13.log)"
     ],
     "additionalDirectories": [
       "\\tmp"

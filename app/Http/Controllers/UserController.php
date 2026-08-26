@@ -37,7 +37,7 @@ class UserController extends Controller
             'username.unique'     => 'Username sudah digunakan.',
             'username.alpha_dash' => 'Username hanya boleh huruf, angka, dan underscore.',
             'password.required'   => 'Password wajib diisi.',
-            'password.min'        => 'Password minimal 6 karakter.',
+            'password.min'        => 'Password minimal 8 karakter.',
             'password.confirmed'  => 'Konfirmasi password tidak cocok.',
             'role.required'       => 'Role wajib dipilih.',
         ]);

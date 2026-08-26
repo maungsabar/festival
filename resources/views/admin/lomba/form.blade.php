@@ -141,19 +141,21 @@
           <label class="block text-sm font-semibold text-gray-700 mb-1.5">Min. Anggota <span class="text-red-500">*</span></label>
           <input type="number"
                  name="min_anggota"
+                 id="min_anggota"
                  value="{{ old('min_anggota',$lomba?->min_anggota??2) }}"
                  min="2" max="50"
-                 {{ $isTeam ? '' : 'enabled' }}
-                 class="w-full border border-gray-200 focus:border-blue-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                 {{ $isTeam ? 'required' : 'disabled' }}
+                 class="w-full border border-gray-200 focus:border-blue-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed">
         </div>
         <div>
           <label class="block text-sm font-semibold text-gray-700 mb-1.5">Maks. Anggota <span class="text-red-500">*</span></label>
           <input type="number"
                  name="max_anggota"
+                 id="max_anggota"
                  value="{{ old('max_anggota',$lomba?->max_anggota??5) }}"
                  min="2" max="50"
-                 {{ $isTeam ? '' : 'enabled' }}
-                 class="w-full border border-gray-200 focus:border-blue-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                 {{ $isTeam ? 'required' : 'disabled' }}
+                 class="w-full border border-gray-200 focus:border-blue-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed">
         </div>
       </div>
 
@@ -319,8 +321,22 @@
 <script>
 document.querySelectorAll('input[name="tipe"]').forEach(r => {
   r.addEventListener('change', () => {
+    const isTeam = r.value === 'team';
     const teamFields = document.getElementById('team-fields');
-    teamFields.classList.toggle('hidden', r.value !== 'team');
+    teamFields.classList.toggle('hidden', !isTeam);
+
+    // PENTING: field yang disembunyikan HARUS di-disable, bukan cuma dilepas 'required'-nya.
+    // Alasan: input min/max_anggota juga punya batas min="2" — begitu tipe balik ke 'single',
+    // nilainya otomatis 1 (di bawah batas min=2), jadi browser tetap menganggapnya INVALID
+    // (rangeUnderflow) meski tidak lagi wajib diisi. Field invalid yang tersembunyi bikin
+    // submit gagal TOTAL tanpa reaksi apa pun (browser tidak bisa fokus ke situ buat kasih
+    // tahu). 'disabled' menyingkirkan field dari validasi HTML5 sekaligus dari pengiriman
+    // form — server (LombaController) memang sudah mengabaikan nilainya untuk tipe 'single'.
+    ['min_anggota', 'max_anggota'].forEach(id => {
+      const el = document.getElementById(id);
+      el.required = isTeam;
+      el.disabled = !isTeam;
+    });
   });
 });
 </script>

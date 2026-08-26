@@ -101,7 +101,7 @@
           <input type="password" name="password" id="pwInput"
                  class="w-full border {{ $errors->has('password') ? 'border-red-400 bg-red-50' : 'border-gray-200 focus:border-blue-500' }}
                         rounded-xl pl-10 pr-11 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-                 placeholder="{{ $user ? 'Kosongkan jika tidak diubah' : 'Minimal 6 karakter' }}"
+                 placeholder="{{ $user ? 'Kosongkan jika tidak diubah' : 'Minimal 8 karakter' }}"
                  {{ $user ? '' : 'required' }}>
           <button type="button" onclick="togglePw('pwInput','eyePw1','eyePw2')"
                   class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
