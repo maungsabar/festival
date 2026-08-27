@@ -71,7 +71,7 @@
         <option value="Putri" {{ request('gender')==='Putri'?'selected':'' }}>♀ Putri</option>
       </select>
       @endif
-      <select name="jenjang"
+      <select name="jenjang" id="filterJenjang"
               class="border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white
                      focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all">
         <option value="">Semua Jenjang</option>
@@ -79,12 +79,13 @@
         <option value="SMA"  {{ request('jenjang')==='SMA'?'selected':'' }}>SMA</option>
         <option value="UMUM" {{ request('jenjang')==='UMUM'?'selected':'' }}>UMUM</option>
       </select>
-      <select name="id_lomba"
+      <select name="id_lomba" id="filterLomba"
               class="border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white max-w-[180px]
                      focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all">
         <option value="">Semua Lomba</option>
         @foreach($lombas as $l)
-        <option value="{{ $l->id }}" {{ (string) request('id_lomba')===(string) $l->id?'selected':'' }}>{{ $l->nama_lomba }}</option>
+        <option value="{{ $l->id }}" data-jenjang="{{ $l->jenjang }}"
+                {{ (string) request('id_lomba')===(string) $l->id?'selected':'' }}>{{ $l->nama_lomba }} ({{ $l->jenjang }})</option>
         @endforeach
       </select>
       <select name="status"
@@ -244,5 +245,34 @@ document.addEventListener('click', function(e) {
   const drop = document.getElementById('exportDropdown');
   if (menu && drop && !drop.contains(e.target)) menu.classList.add('hidden');
 });
+
+// ── Filter Lomba mengikuti Jenjang terpilih ─────────────────────────────
+// Opsi lomba yang jenjang-nya tidak cocok disembunyikan (bukan dihapus dari
+// DOM), supaya kalau admin ganti jenjang lagi opsi lain langsung tersedia
+// tanpa perlu reload. Kalau lomba yang sedang dipilih jadi tidak cocok
+// (mis. jenjang diganti setelah lomba sudah dipilih), pilihan direset ke
+// "Semua Lomba" supaya tidak terkirim filter yang saling bertentangan.
+(function () {
+  const jenjangSelect = document.getElementById('filterJenjang');
+  const lombaSelect   = document.getElementById('filterLomba');
+  if (!jenjangSelect || !lombaSelect) return;
+
+  function applyJenjangFilter() {
+    const jenjang = jenjangSelect.value;
+    let selectedStillVisible = false;
+
+    Array.from(lombaSelect.options).forEach(opt => {
+      if (!opt.value) return; // opsi "Semua Lomba" selalu tampil
+      const cocok = !jenjang || opt.dataset.jenjang === jenjang;
+      opt.hidden = !cocok;
+      if (cocok && opt.selected) selectedStillVisible = true;
+    });
+
+    if (!selectedStillVisible) lombaSelect.value = '';
+  }
+
+  jenjangSelect.addEventListener('change', applyJenjangFilter);
+  applyJenjangFilter(); // sinkronkan saat halaman dimuat (mis. jenjang sudah terisi dari URL)
+})();
 </script>
 @endpush
