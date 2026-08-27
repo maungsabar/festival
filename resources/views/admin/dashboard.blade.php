@@ -132,22 +132,30 @@
     </div>
     @endif
 
-    {{-- Bar: Per Lomba --}}
-    <div class="{{ $role === 'superadmin' ? 'xl:col-span-3' : 'xl:col-span-5' }} bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-        <div class="flex items-center justify-between mb-4">
-            <div>
-                <h2 class="font-bold text-gray-900 text-sm">Peserta per Lomba</h2>
-                <p class="text-xs text-gray-400 mt-0.5">Distribusi pendaftar</p>
+    {{-- Bar: Per Lomba — dipisah per jenjang (SMP/SMA/UMUM), grafik berdiri (vertical bar) --}}
+    <div class="{{ $role === 'superadmin' ? 'xl:col-span-3' : 'xl:col-span-5' }} space-y-4">
+        @foreach(['SMP','SMA','UMUM'] as $jenjang)
+        @php $items = $lombaStatsByJenjang->get($jenjang, collect()); @endphp
+        <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="font-bold text-gray-900 text-sm">Peserta per Lomba — {{ $jenjang }}</h2>
+                    <p class="text-xs text-gray-400 mt-0.5">{{ $items->count() }} lomba jenjang {{ $jenjang }}</p>
+                </div>
+                <a href="{{ route('admin.lomba.index') }}"
+                   class="text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-semibold transition-colors">
+                    Kelola →
+                </a>
             </div>
-            <a href="{{ route('admin.lomba.index') }}"
-               class="text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-semibold transition-colors">
-                Kelola →
-            </a>
+            @if($items->isEmpty())
+            <div class="h-[120px] flex items-center justify-center text-xs text-gray-400">Belum ada lomba jenjang {{ $jenjang }}.</div>
+            @else
+            <div style="height:240px;position:relative">
+                <canvas id="barChart{{ $jenjang }}"></canvas>
+            </div>
+            @endif
         </div>
-        @php $barH = max(200, $lombaStats->count() * 42 + 40); @endphp
-        <div style="height:{{ $barH }}px;position:relative">
-            <canvas id="barChart"></canvas>
-        </div>
+        @endforeach
     </div>
 </div>
 
@@ -269,6 +277,20 @@
     @endforeach
 </div>
 
+@php
+    // Dihitung terpisah dulu (bukan langsung di dalam @json()) karena direktif @json()
+    // Blade salah mem-parsing ekspresi yang rumit langsung di dalam argumennya —
+    // pola yang sama seperti $lockedLombaJs di public/daftar.blade.php.
+    $lombaByJenjangJs = [];
+    foreach (['SMP', 'SMA', 'UMUM'] as $jj) {
+        $items = $lombaStatsByJenjang->get($jj, collect());
+        $lombaByJenjangJs[$jj] = [
+            'labels' => $items->pluck('nama_lomba')->values(),
+            'data'   => $items->pluck('pendaftars_count')->values(),
+            'gender' => $items->pluck('gender')->values(),
+        ];
+    }
+@endphp
 <script>
 window._dashData = {
     totalPutra: {{ $totalPutra ?? 0 }},
@@ -276,9 +298,7 @@ window._dashData = {
     belum: {{ $belum }},
     terverif: {{ $terverif }},
     ditolak: {{ $ditolak }},
-    lombaLabels: @json($lombaStats->pluck('nama_lomba')),
-    lombaData:   @json($lombaStats->pluck('pendaftars_count')),
-    lombaGender: @json($lombaStats->pluck('gender')),
+    lombaByJenjang: @json($lombaByJenjangJs),
     jenjangPutra: [{{ $jenjangData['SMP']['Putra'] }}, {{ $jenjangData['SMA']['Putra'] }}, {{ $jenjangData['UMUM']['Putra'] }}],
     jenjangPutri: [{{ $jenjangData['SMP']['Putri'] }}, {{ $jenjangData['SMA']['Putri'] }}, {{ $jenjangData['UMUM']['Putri'] }}],
 };
@@ -343,24 +363,29 @@ if (donutEl) {
     });
 }
 
-// Bar: Per Lomba
-new Chart(document.getElementById('barChart'), {
-    type:'bar',
-    data:{
-        labels: d.lombaLabels,
-        datasets:[{ label:'Pendaftar', data:d.lombaData,
-            backgroundColor: d.lombaGender.map(g=>g==='Putra'?'#3b82f6':'#ec4899'),
-            borderRadius:6, borderSkipped:false }]
-    },
-    options:{
-        indexAxis:'y', responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>` ${c.parsed.x} peserta`}} },
-        scales:{
-            x:{ grid:{color:'rgba(0,0,0,0.04)'}, ticks:{stepSize:1,precision:0}, beginAtZero:true },
-            y:{ grid:{display:false}, ticks:{font:{size:11,weight:'500'}} }
+// Bar: Per Lomba — dipisah per jenjang, grafik berdiri (vertical bar, bukan horizontal)
+['SMP', 'SMA', 'UMUM'].forEach(jenjang => {
+    const canvas = document.getElementById('barChart' + jenjang);
+    if (!canvas) return; // jenjang ini tidak punya lomba sama sekali (canvas tidak dirender)
+    const g = d.lombaByJenjang[jenjang];
+    new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels: g.labels,
+            datasets: [{ label: 'Pendaftar', data: g.data,
+                backgroundColor: g.gender.map(gd => gd === 'Putra' ? '#3b82f6' : '#ec4899'),
+                borderRadius: 6, borderSkipped: false, maxBarThickness: 48 }]
         },
-        animation:{ duration:900, easing:'easeOutQuart' }
-    }
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ` ${c.parsed.y} peserta` } } },
+            scales: {
+                x: { grid: { display: false }, ticks: { font: { size: 10, weight: '500' }, autoSkip: false, maxRotation: 40, minRotation: 0 } },
+                y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { stepSize: 1, precision: 0 }, beginAtZero: true }
+            },
+            animation: { duration: 900, easing: 'easeOutQuart' }
+        }
+    });
 });
 
 // Donut: Status

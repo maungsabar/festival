@@ -31,6 +31,10 @@ class DashboardController extends Controller
             ->orderBy('gender')->orderBy('nama_lomba')
             ->get();
 
+        // Dipisah per jenjang supaya grafik "Peserta per Lomba" di dashboard bisa
+        // ditampilkan sebagai 3 grafik terpisah (SMP/SMA/UMUM), bukan digabung.
+        $lombaStatsByJenjang = $lombaStats->groupBy('jenjang');
+
         // Count pendaftaran per jenjang
         $jenjangStats = Pendaftar::join('lombas', 'pendaftars.id_lomba', '=', 'lombas.id')
             ->selectRaw('lombas.jenjang, pendaftars.gender, count(pendaftars.id) as total')
@@ -58,7 +62,7 @@ class DashboardController extends Controller
         return view('admin.dashboard', compact(
             'totalPutra', 'totalPutri',
             'belum', 'terverif', 'ditolak',
-            'lombaStats', 'recentPendaftar', 'role',
+            'lombaStats', 'lombaStatsByJenjang', 'recentPendaftar', 'role',
             'jenjangData'
         ));
     }
