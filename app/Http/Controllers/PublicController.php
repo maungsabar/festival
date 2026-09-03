@@ -300,6 +300,8 @@ class PublicController extends Controller
                 'min_anggota' => $l->min_anggota,
                 'max_anggota' => $l->max_anggota,
                 'kuota'       => $l->kuota,
+                'biaya'       => $l->biaya,
+                'formatted_biaya' => $l->formatted_biaya,
                 'sisa_kuota'  => $l->sisaKuota(),
                 'is_full'     => $l->isFull(),
                 'jenjang'     => $l->jenjang,

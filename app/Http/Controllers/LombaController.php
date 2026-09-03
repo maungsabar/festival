@@ -32,6 +32,7 @@ class LombaController extends Controller
             'max_anggota'=>'required_if:tipe,team|nullable|integer|min:1|max:50|gte:min_anggota',
 
             'kuota'=>'nullable|integer|min:1',
+            'biaya'=>'nullable|integer|min:0',
             'aktif'=>'nullable|boolean',
             'pemenang'=>'nullable|string|max:500',
             'tampil_pemenang'=>'nullable|boolean',
@@ -63,6 +64,7 @@ class LombaController extends Controller
             'min_anggota'=>$request->tipe==='single'?1:$request->min_anggota,
             'max_anggota'=>$request->tipe==='single'?1:$request->max_anggota,
             'kuota'=>$request->kuota?:null,
+            'biaya'=>$request->biaya?:0,
             'aktif'=>$request->boolean('aktif',true),
             'pemenang'=>$request->pemenang,
             'tampil_pemenang'=>$request->boolean('tampil_pemenang',false),
@@ -87,6 +89,7 @@ class LombaController extends Controller
             'max_anggota'=>'required_if:tipe,team|nullable|integer|min:1|max:50|gte:min_anggota',
 
             'kuota'=>'nullable|integer|min:1',
+            'biaya'=>'nullable|integer|min:0',
             'aktif'=>'nullable|boolean',
             'pemenang'=>'nullable|string|max:500',
             'tampil_pemenang'=>'nullable|boolean',
@@ -124,6 +127,7 @@ class LombaController extends Controller
             'min_anggota'=>$request->tipe==='single'?1:$request->min_anggota,
             'max_anggota'=>$request->tipe==='single'?1:$request->max_anggota,
             'kuota'=>$request->kuota?:null,
+            'biaya'=>$request->biaya?:0,
             'aktif'=>$request->boolean('aktif',false),
             'pemenang'=>$request->pemenang,
             'tampil_pemenang'=>$request->boolean('tampil_pemenang',false),

@@ -555,6 +555,11 @@ function renderLombaList() {
       ? `<span class="text-[10px] font-semibold bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded-full">👥 Beregu ${l.min_anggota}–${l.max_anggota} org</span>`
       : `<span class="text-[10px] font-semibold bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">👤 Perorangan</span>`;
 
+    const biayaBadge = `<div class="mt-1.5 flex items-center justify-between bg-emerald-50/70 border border-emerald-100/80 rounded-lg px-2 py-1">
+      <span class="text-[10px] font-semibold text-emerald-800 flex items-center gap-1">💳 Biaya Pendaftaran:</span>
+      <span class="text-[11px] font-extrabold text-emerald-700">${l.formatted_biaya}</span>
+    </div>`;
+
     div.className = `flex flex-col border-2 rounded-xl px-4 py-3 transition-all
       ${isFull ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed' : `cursor-pointer ${isSel?`border-${color}-500 bg-${color}-50`:'border-gray-200 hover:border-gray-300 hover:bg-gray-50'}`}`;
 
@@ -567,7 +572,8 @@ function renderLombaList() {
         </div>
         <div class="flex-1 min-w-0">
           <p class="font-semibold text-sm text-gray-800">${l.nama_lomba}</p>
-          <div class="flex items-center gap-1.5 mt-0.5">${jenjangBadge}${tipeBadge}${isFull?'<span class="text-[10px] text-red-500 font-semibold">Kuota Penuh</span>':''}</div>
+          <div class="flex flex-wrap items-center gap-1.5 mt-0.5">${jenjangBadge}${tipeBadge}${isFull?'<span class="text-[10px] text-red-500 font-semibold">Kuota Penuh</span>':''}</div>
+          ${biayaBadge}
         </div>
         <div id="radio-${l.id}" class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0
              ${isSel?`border-${color}-500 bg-${color}-500`:'border-gray-300'}">

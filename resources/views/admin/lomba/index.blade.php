@@ -45,6 +45,9 @@
           <span class="text-[10px] font-medium px-2 py-0.5 rounded-full {{ $l->tipe==='team'?'bg-violet-100 text-violet-700':'bg-gray-100 text-gray-600' }}">
             {{ $l->tipe==='team'?'👥 Beregu':'👤 Perorangan' }}
           </span>
+          <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full {{ $l->biaya > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-gray-100 text-gray-600' }}">
+            💳 {{ $l->formatted_biaya }}
+          </span>
           @if($l->kuota)
           <span class="text-[10px] text-gray-500">{{ $l->pendaftars_count }}/{{ $l->kuota }} kuota</span>
           @else
@@ -95,7 +98,7 @@
           <th class="text-left px-4 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Jenjang</th>
           <th class="text-left px-4 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tipe</th>
           <th class="text-left px-4 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-          <th class="text-left px-4 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Kuota</th>
+          <th class="text-left px-4 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Biaya</th>
           <th class="text-left px-4 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Pemenang</th>
           <th class="text-left px-4 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
         </tr>
@@ -150,6 +153,11 @@
               <span class="w-1.5 h-1.5 rounded-full {{ $l->aktif?'bg-emerald-500':'bg-gray-300' }}"></span>
               <span class="text-xs text-gray-600">{{ $l->aktif?'Aktif':'Nonaktif' }}</span>
             </div>
+          </td>
+          <td class="px-4 py-4">
+            <span class="text-xs font-bold {{ $l->biaya > 0 ? 'text-gray-900' : 'text-emerald-600' }}">
+              {{ $l->formatted_biaya }}
+            </span>
           </td>
           <td class="px-4 py-4">
             @if($l->kuota)

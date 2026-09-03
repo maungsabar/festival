@@ -203,20 +203,29 @@
                  placeholder="Kosongkan = tidak terbatas">
           <p class="text-xs text-gray-400 mt-1.5">Saat penuh, lomba otomatis dinonaktifkan.</p>
         </div>
-        <div class="flex items-center">
-          <label class="flex items-center gap-3 cursor-pointer select-none p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors w-full">
-            <div class="relative shrink-0">
-              <input type="checkbox" name="aktif" value="1" id="aktifToggle"
-                     {{ old('aktif',$lomba?($lomba->aktif?'1':''):'1')?'checked':'' }} class="sr-only peer">
-              <div class="w-11 h-6 bg-gray-300 peer-checked:bg-blue-600 rounded-full transition-colors"></div>
-              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5"></div>
-            </div>
-            <div>
-              <p class="font-semibold text-gray-700 text-sm">Lomba Aktif</p>
-              <p class="text-xs text-gray-400">Tampil di form publik</p>
-            </div>
-          </label>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Biaya Pendaftaran (Rp)</label>
+          <input type="number" name="biaya" value="{{ old('biaya',$lomba?->biaya ?? 0) }}" min="0" step="1000"
+                 class="w-full border border-gray-200 focus:border-blue-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                 placeholder="Contoh: 50000 (Isi 0 jika Gratis)">
+          <p class="text-xs text-gray-400 mt-1.5">Isi 0 jika pendaftaran gratis tanpa biaya.</p>
         </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="flex items-center gap-3 cursor-pointer select-none p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors w-full">
+          <div class="relative shrink-0">
+            <input type="checkbox" name="aktif" value="1" id="aktifToggle"
+                   {{ old('aktif',$lomba?($lomba->aktif?'1':''):'1')?'checked':'' }} class="sr-only peer">
+            <div class="w-11 h-6 bg-gray-300 peer-checked:bg-blue-600 rounded-full transition-colors"></div>
+            <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5"></div>
+          </div>
+          <div>
+            <p class="font-semibold text-gray-700 text-sm">Lomba Aktif</p>
+            <p class="text-xs text-gray-400">Tampil di form publik</p>
+          </div>
+        </label>
       </div>
     </div>
 

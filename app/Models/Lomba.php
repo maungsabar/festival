@@ -5,9 +5,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Lomba extends Model
 {
-    protected $fillable = ['nama_lomba','gender','jenjang','aktif','tipe','min_anggota','max_anggota','kuota','pemenang','tampil_pemenang','gambar','file_guidebook'];
+    protected $fillable = ['nama_lomba','gender','jenjang','aktif','tipe','min_anggota','max_anggota','kuota','biaya','pemenang','tampil_pemenang','gambar','file_guidebook'];
     protected function casts(): array {
-        return ['aktif'=>'boolean','tampil_pemenang'=>'boolean','kuota'=>'integer','min_anggota'=>'integer','max_anggota'=>'integer'];
+        return ['aktif'=>'boolean','tampil_pemenang'=>'boolean','kuota'=>'integer','biaya'=>'integer','min_anggota'=>'integer','max_anggota'=>'integer'];
+    }
+
+    public function getFormattedBiayaAttribute(): string {
+        return ($this->biaya && $this->biaya > 0) ? 'Rp ' . number_format($this->biaya, 0, ',', '.') : 'Gratis';
     }
 
     public function pendaftars(): HasMany { return $this->hasMany(Pendaftar::class,'id_lomba'); }

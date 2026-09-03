@@ -221,6 +221,10 @@
                 {{ $l->tipe==='team'?'👥 Beregu':'👤 Perorangan' }}
               </span>
             </div>
+            <div class="mt-2.5 flex items-center justify-between bg-emerald-50/60 border border-emerald-100 rounded-xl px-2.5 py-1.5">
+              <span class="text-[11px] font-semibold text-emerald-800 flex items-center gap-1">💳 Biaya Pendaftaran</span>
+              <span class="text-xs font-black text-emerald-700">{{ $l->formatted_biaya }}</span>
+            </div>
           </div>
           @if($full)
           <span class="text-[10px] font-semibold bg-red-100 text-red-600 px-2 py-0.5 rounded-full shrink-0">Penuh</span>
